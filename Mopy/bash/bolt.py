@@ -1734,13 +1734,14 @@ class Table(DataDict):
     Rows are the first index ('fileName') and columns are the second index
     ('propName')."""
 
-    def __init__(self,dictFile):
+    def __init__(self, dictFile, path_keys=True):
         """Initialize and read data from dictFile, if available."""
         self.dictFile = dictFile
         dictFile.load()
         self.vdata = dictFile.vdata
         self.data = dictFile.data
         self.hasChanged = False ##: move to PickleDict
+        self.path_keys = path_keys
 
     def save(self):
         """Saves to pickle file."""
@@ -1764,6 +1765,7 @@ class Table(DataDict):
         """Set value for row, column."""
         data = self.data
         if row not in data:
+            if self.path_keys: assert isinstance(row, Path)
             data[row] = {}
         data[row][column] = value
         self.hasChanged = True
@@ -1772,6 +1774,7 @@ class Table(DataDict):
         """Set value for row, column."""
         data = self.data
         if row not in data:
+            if self.path_keys: assert isinstance(row, Path)
             data[row] = {}
         self.hasChanged = True
         return data[row].setdefault(column,value)
@@ -1802,6 +1805,7 @@ class Table(DataDict):
         """Renames a row of data."""
         data = self.data
         if oldRow in data:
+            if self.path_keys: assert isinstance(newRow, Path)
             data[newRow] = data[oldRow]
             del data[oldRow]
             self.hasChanged = True
@@ -1810,6 +1814,7 @@ class Table(DataDict):
         """Copies a row of data."""
         data = self.data
         if oldRow in data:
+            if self.path_keys: assert isinstance(newRow, Path)
             data[newRow] = data[oldRow].copy()
             self.hasChanged = True
 
@@ -1822,6 +1827,7 @@ class Table(DataDict):
         self.hasChanged = True
     def setdefault(self,key,default):
         if key not in self.data: self.hasChanged = True
+        if self.path_keys: assert isinstance(key, Path)
         return self.data.setdefault(key,default)
     def pop(self,key,default=None):
         self.hasChanged = True
