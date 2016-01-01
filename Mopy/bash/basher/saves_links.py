@@ -620,7 +620,9 @@ class Save_Move(ChoiceLink):
             return
         savesTable = bosh.saveInfos.table
         #--bashDir
-        destTable = bolt.Table(bolt.PickleDict(destDir.join('Bash','Table.dat')))
+        destTable = bolt.Table(
+                bolt.PickleDict(destDir.join('Bash', 'Table.dat')),
+                path_keys=False)
         count = 0
         ask = True
         for fileName in self.selected:

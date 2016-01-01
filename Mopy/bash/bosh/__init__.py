@@ -2240,6 +2240,7 @@ class _AFileInfo:
 
     def sameAs(self,fileInfo):
         """Return true if other fileInfo refers to same file as this fileInfo."""
+        assert fileInfo is not None
         return ((self.size == fileInfo.size) and
                 (self.mtime == fileInfo.mtime) and
                 (self.ctime == fileInfo.ctime) and
@@ -4139,7 +4140,7 @@ class SaveInfos(FileInfos):
         FileInfos.__init__(self, dirs['saveBase'].join(self.localSave), SaveInfo)
         # Save Profiles database
         self.profiles = bolt.Table(bolt.PickleDict(
-            dirs['saveBase'].join(u'BashProfiles.dat')))
+            dirs['saveBase'].join(u'BashProfiles.dat')), path_keys=False)
 
     def getBashDir(self):
         """Return the Bash save settings directory, creating it if it does
