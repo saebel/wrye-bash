@@ -4705,7 +4705,7 @@ class Installer(object):
     _extensions_to_process = set()
 
     @staticmethod
-    def init_global_skips():
+    def init_global_skips(os_sep=os.path.sep):
         """Update _global_skips with functions deciding if 'fileLower' (docs !)
         must be skipped, based on global settings. Should be updated on boot
         and on flipping skip settings - and nowhere else hopefully."""
@@ -4718,23 +4718,25 @@ class Installer(object):
         if settings['bash.installers.skipDistantLOD']:
             Installer._global_start_skips.append(u'distantlod')
         if settings['bash.installers.skipLandscapeLODMeshes']:
-            Installer._global_start_skips.append(u'meshes\\landscape\\lod')
+            meshes_lod = os_sep.join((u'meshes', u'landscape', u'lod'))
+            Installer._global_start_skips.append(meshes_lod)
         if settings['bash.installers.skipScreenshots']:
             Installer._global_start_skips.append(u'screenshots')
         # LOD textures
         skipLODTextures = settings['bash.installers.skipLandscapeLODTextures']
         skipLODNormals = settings['bash.installers.skipLandscapeLODNormals']
         skipAllTextures = skipLODTextures and skipLODNormals
+        tex_gen = os_sep.join((u'textures', u'landscapelod', u'generated'))
         if skipAllTextures:
-            Installer._global_start_skips.append(u'textures\\landscapelod\\generated')
-        elif skipLODTextures: Installer._global_skips.append(lambda f:  f.startswith(
-            u'textures\\landscapelod\\generated') and not f.endswith(u'_fn.dds'))
-        elif skipLODNormals: Installer._global_skips.append(lambda f:  f.startswith(
-            u'textures\\landscapelod\\generated') and f.endswith(u'_fn.dds'))
+            Installer._global_start_skips.append(tex_gen)
+        elif skipLODTextures: Installer._global_skips.append(
+            lambda f: f.startswith(tex_gen) and not f.endswith(u'_fn.dds'))
+        elif skipLODNormals: Installer._global_skips.append(
+            lambda f: f.startswith(tex_gen) and f.endswith(u'_fn.dds'))
         # Skipped extensions
         skipObse = not settings['bash.installers.allowOBSEPlugins']
         if skipObse:
-            Installer._global_start_skips.append(bush.game.se.shortName.lower() + u'\\')
+            Installer._global_start_skips.append(bush.game.se.shortName.lower() + os_sep)
             Installer._global_skip_extensions |= Installer._executables_ext
         if settings['bash.installers.skipImages']:
             Installer._global_skip_extensions |= Installer.imageExts
