@@ -24,7 +24,7 @@
 
 #--Game ESM/ESP/BSA files
 #  These filenames need to be in lowercase,
-bethDataFiles = set((
+bethDataFiles = {
     #--Vanilla
     ur'falloutnv.esm',
     ur'fallout - meshes.bsa',
@@ -58,10 +58,10 @@ bethDataFiles = set((
     ur'lonesomeroad.esm',
     ur'lonesomeroad - main.bsa',
     ur'lonesomeroad - sounds.bsa',
-    ))
+}
 
 #--Every file in the Data directory from Bethsoft
-allBethFiles = set((
+allBethFiles = {
     # Section 1: Vanilla files
     ur'Credits.txt',
     ur'CreditsWacky.txt',
@@ -372,7 +372,7 @@ allBethFiles = set((
     ur'OldWorldBlues - Sounds.bsa',
     ur'OldWorldBlues.esm',
     ur'DLCList.txt',
-    ))
+}
 
 # Function Info ---------------------------------------------------------------
 conditionFunctionData = ( #--0: no param; 1: int param; 2: formid param
@@ -1073,10 +1073,8 @@ statsHeaders = (
 # SoundPatcher
 #-------------------------------------------------------------------------------
 # Needs longs in SoundPatcher
-soundsLongsTypes = set((
-    'ACTI', 'ADDN', 'ALCH', 'ASPC', 'CONT', 'CREA', 'DOOR', 'LIGH', 'MGEF', 'SOUN',
-    'WATR', 'WTHR', 'WEAP', 'TACT',
-))
+soundsLongsTypes = {'ACTI', 'ADDN', 'ALCH', 'ASPC', 'CONT', 'CREA', 'DOOR',
+                    'LIGH', 'MGEF', 'SOUN', 'WATR', 'WTHR', 'WEAP', 'TACT'}
 soundsTypes = {
     "ACTI": ('soundLooping','soundActivation',),
     "ADDN": ('ambientSound',),
@@ -1139,13 +1137,12 @@ cellRecFlags = {
 #-------------------------------------------------------------------------------
 # GraphicsPatcher
 #-------------------------------------------------------------------------------
-graphicsLongsTypes = set((
-    'ACTI', 'ALCH', 'AMMO', 'ARMA', 'ARMO', 'BOOK', 'BPTD', 'CCRD', 'CHIP', 'CLAS',
-    'CMNY', 'CREA', 'CSNO', 'DOOR', 'EFSH', 'EXPL', 'FURN', 'GRAS', 'HDPT', 'IMOD',
-    'INGR', 'IPCT', 'IPDS', 'KEYM', 'LIGH', 'LSCR', 'LTEX', 'MICN', 'MISC', 'MSTT',
-    'NOTE', 'NPC_', 'PROJ', 'PWAT', 'REPU', 'STAT', 'TACT', 'TERM', 'TXST', 'TREE',
-    'WEAP', 'MGEF',
-    ))
+graphicsLongsTypes = {'ACTI', 'ALCH', 'AMMO', 'ARMA', 'ARMO', 'BOOK', 'BPTD',
+                      'CCRD', 'CHIP', 'CLAS', 'CMNY', 'CREA', 'CSNO', 'DOOR',
+                      'EFSH', 'EXPL', 'FURN', 'GRAS', 'HDPT', 'IMOD', 'INGR',
+                      'IPCT', 'IPDS', 'KEYM', 'LIGH', 'LSCR', 'LTEX', 'MICN',
+                      'MISC', 'MSTT', 'NOTE', 'NPC_', 'PROJ', 'PWAT', 'REPU',
+                      'STAT', 'TACT', 'TERM', 'TXST', 'TREE', 'WEAP', 'MGEF'}
 graphicsTypes = {
     "ACTI": ('model',),
     "ALCH": ('iconPath','smallIconPath','model',),

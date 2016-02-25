@@ -24,7 +24,7 @@
 
 #--Game ESM/ESP/BSA files
 #  These filenames need to be in lowercase,
-bethDataFiles = set((
+bethDataFiles = {
     #--Vanilla
     ur'fallout3.esm',
     ur'fallout - menuvoices.bsa',
@@ -49,10 +49,10 @@ bethDataFiles = set((
     ur'zeta.esm',
     ur'zeta - main.bsa',
     ur'zeta - sounds.bsa',
-    ))
+}
 
 #--Every file in the Data directory from Bethsoft
-allBethFiles = set((
+allBethFiles = {
     # Section 1: Vanilla files
     ur'Credits.txt',
     ur'CreditsWacky.txt',
@@ -192,7 +192,8 @@ allBethFiles = set((
     ur'zeta - main.bsa',
     ur'zeta - sounds.bsa',
     ur'DLCList.txt',
-    ))
+}
+
 # Function Info ---------------------------------------------------------------
 conditionFunctionData = ( #--0: no param; 1: int param; 2: formid param
     (  1, 'GetDistance', 2, 0),
@@ -744,11 +745,9 @@ listTypes = ('LVLC','LVLI','LVLN')
 #-------------------------------------------------------------------------------
 # NamesPatcher
 #-------------------------------------------------------------------------------
-namesTypes = set((
-    'ACTI', 'ALCH', 'AMMO', 'ARMO', 'BOOK', 'CLAS', 'CONT', 'CREA', 'DOOR', 'EYES',
-    'FACT', 'HAIR', 'INGR', 'KEYM', 'LIGH', 'MISC', 'NOTE', 'NPC_', 'RACE', 'SPEL',
-    'TACT', 'TERM', 'WEAP',
-        ))
+namesTypes = {'ACTI', 'ALCH', 'AMMO', 'ARMO', 'BOOK', 'CLAS', 'CONT', 'CREA',
+              'DOOR', 'EYES', 'FACT', 'HAIR', 'INGR', 'KEYM', 'LIGH', 'MISC',
+              'NOTE', 'NPC_', 'RACE', 'SPEL', 'TACT', 'TERM', 'WEAP'}
 #-------------------------------------------------------------------------------
 # ItemPrices Patcher
 #-------------------------------------------------------------------------------
@@ -833,10 +832,9 @@ statsHeaders = (
 # SoundPatcher
 #-------------------------------------------------------------------------------
 # Needs longs in SoundPatcher
-soundsLongsTypes = set((
-    'ACTI', 'ADDN', 'ALCH', 'ASPC', 'CONT', 'CREA', 'DOOR', 'EXPL', 'IPCT', 'LIGH',
-    'MGEF', 'PROJ', 'SOUN', 'TACT', 'WATR', 'WEAP', 'WTHR',
-))
+soundsLongsTypes = {'ACTI', 'ADDN', 'ALCH', 'ASPC', 'CONT', 'CREA', 'DOOR',
+                    'EXPL', 'IPCT', 'LIGH', 'MGEF', 'PROJ', 'SOUN', 'TACT',
+                    'WATR', 'WEAP', 'WTHR'}
 soundsTypes = {
     "ACTI": ('soundLooping','soundActivation',),
     "ADDN": ('ambientSound',),
@@ -902,11 +900,10 @@ cellRecFlags = {
 #-------------------------------------------------------------------------------
 # GraphicsPatcher
 #-------------------------------------------------------------------------------
-graphicsLongsTypes = set((
-    'ACTI', 'ALCH', 'AMMO', 'ARMA', 'ARMO', 'BOOK', 'CLAS', 'CREA', 'DOOR', 'EFSH',
-    'EXPL', 'FURN', 'GRAS', 'INGR', 'KEYM', 'LIGH', 'LSCR', 'LTEX', 'MISC', 'NPC_',
-    'STAT', 'TREE', 'WEAP', 'MGEF',
-    ))
+graphicsLongsTypes = {'ACTI', 'ALCH', 'AMMO', 'ARMA', 'ARMO', 'BOOK', 'CLAS',
+                      'CREA', 'DOOR', 'EFSH', 'EXPL', 'FURN', 'GRAS', 'INGR',
+                      'KEYM', 'LIGH', 'LSCR', 'LTEX', 'MISC', 'NPC_', 'STAT',
+                      'TREE', 'WEAP', 'MGEF'}
 graphicsTypes = {
     "ACTI": ('model',),
     "ALCH": ('iconPath','model',),
