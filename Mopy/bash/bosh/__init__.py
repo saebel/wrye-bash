@@ -5022,10 +5022,11 @@ class Installer(object):
                 continue
             #--Remap docs, strings
             if dest is None: dest = file
+            string_extensions = {u'.strings', u'.dlstrings', u'.ilstrings'}
             if rootLower in docDirs:
                 dest = u'\\'.join((u'Docs',file[len(rootLower)+1:]))
             elif (renameStrings and fileStartsWith(u'strings\\') and
-                  fileExt in {u'.strings',u'.dlstrings',u'.ilstrings'}):
+                  fileExt in string_extensions):
                 langSep = fileLower.rfind(u'_')
                 extSep = fileLower.rfind(u'.')
                 lang = fileLower[langSep+1:extSep]
