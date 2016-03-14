@@ -4913,8 +4913,7 @@ class Installer(object):
         language = oblivionIni.getSetting(u'General',u'sLanguage',u'English') if renameStrings else u''
         languageLower = language.lower()
         hasExtraData = self.hasExtraData
-        if type_ == 2:
-            allSubs = set(self.subNames[1:])
+        if type_ == 2: # exclude u'' from active subpackages
             activeSubs = set(x for x,y in zip(self.subNames[1:],self.subActives[1:]) if y)
         data_sizeCrc = {}
         skipDirFiles = self.skipDirFiles
@@ -4943,7 +4942,7 @@ class Installer(object):
                     if fileLower.startswith(Installer._silentSkipsStart):
                         continue # skip subpackage level '--', 'fomod' etc
                 if sub not in activeSubs:
-                    if sub not in allSubs:
+                    if sub == u'':
                         skipDirFilesAdd(file)
                     # Run a modified version of the normal checks, just
                     # looking for esp's for the wizard espmMap, wizard.txt
@@ -4972,12 +4971,6 @@ class Installer(object):
                         self.hasBethFiles = True
                         skipDirFilesDiscard(file)
                         skipDirFilesAdd(file + u' ' + _(u'[Bethesda Content]'))
-                        continue
-                    elif not hasExtraData and rootLower and rootLower not in dataDirsPlus:
-                        continue
-                    elif hasExtraData and rootLower and rootLower in dataDirsMinus:
-                        continue
-                    elif fileExt in skipExts:
                         continue
                     elif not rootLower and reModExtMatch(fileExt):
                         #--Remap espms as defined by the user
