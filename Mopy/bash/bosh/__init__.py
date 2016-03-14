@@ -4410,7 +4410,7 @@ class Installer(object):
     volatile = ('data_sizeCrc', 'skipExtFiles', 'skipDirFiles', 'status',
         'missingFiles', 'mismatchedFiles', 'project_refreshed',
         'mismatchedEspms', 'unSize', 'espms', 'underrides', 'hasWizard',
-        'espmMap', 'hasReadme', 'hasBCF', 'hasBethFiles')
+        'espmMap', 'hasReadme', 'hasBCF', 'hasBethFiles', '_dir_dirs_files')
     __slots__ = persistent + volatile
     #--Package analysis/porting.
     docDirs = {u'screenshots'}
@@ -4578,6 +4578,7 @@ class Installer(object):
         #--Volatiles (not pickled values)
         #--Volatiles: directory specific
         self.project_refreshed = False
+        self._dir_dirs_files = None
         #--Volatile: set by refreshDataSizeCrc
         self.hasWizard = False
         self.hasBCF = False
@@ -5581,7 +5582,9 @@ class InstallerProject(Installer):
         pending, pending_size = {}, 0
         new_sizeCrcDate = {}
         oldGet = self.src_sizeCrcDate.get
-        for asDir, __sDirs, sFiles in os.walk(asRoot):
+        if self._dir_dirs_files is None:
+            self._dir_dirs_files = os.walk(asRoot)
+        for asDir, __sDirs, sFiles in self._dir_dirs_files:
             progress(0.05, progress_msg + (u'\n%s' % asDir[relPos:]))
             get_mtime = os.path.getmtime(asDir)
             max_mtime = max_mtime if max_mtime >= get_mtime else get_mtime
@@ -5600,6 +5603,7 @@ class InstallerProject(Installer):
                 else:
                     pending[rpFile] = (size, oCrc, date, asFile)
                     pending_size += size
+        self._dir_dirs_files = None ##: finally
         Installer.final_update(new_sizeCrcDate, self.src_sizeCrcDate, pending,
                                pending_size, progress, recalculate_all_crcs,
                                rootName)
