@@ -1551,11 +1551,16 @@ class IniFile(object):
     reSection = re.compile(ur'^\[\s*(.+?)\s*\]$',re.U)
     reSetting = re.compile(ur'(.+?)\s*=(.*)',re.U)
     encoding = 'utf-8'
+    __empty = {}
 
     def __init__(self,path,defaultSection=u'General'):
         self.path = path
         self.defaultSection = defaultSection
         self.isCorrupted = False
+        self._settings_cache = self.__empty
+        self._ini_size = self.path.size if self.path.exists() else 0
+        self._ini_mod_time = self.path.mtime if self.path.exists() else 0
+        self._settings_cache = self.__empty
 
     @staticmethod
     def formatMatch(path):
@@ -1584,7 +1589,15 @@ class IniFile(object):
 
     def getSettings(self):
         """Gets settings for self."""
-        return self.getTweakFileSettings(self.path,True)
+        if not self.path.exists() or self.path.isdir(): return {}, {}
+        psize, pmtime = self.path.size, self.path.mtime
+        if self._settings_cache is not self.__empty and (
+            self._ini_size == psize) and (self._ini_mod_time == pmtime):
+            deleted = {}
+        else:
+            self._ini_size, self._ini_mod_time = psize, pmtime
+            self._settings_cache, deleted = self.getTweakFileSettings(self.path, True)
+        return copy.copy(self._settings_cache), deleted
 
     def getTweakFileSettings(self,tweakPath,setCorrupted=False,lineNumbers=False):
         """Gets settings in a tweak file."""
@@ -4368,7 +4381,8 @@ class ScreensData(DataDict):
     def refresh(self):
         """Refresh list of screenshots."""
         self.dir = dirs['app']
-        ssBase = GPath(oblivionIni.getSetting(u'Display',u'SScreenShotBaseName',u'ScreenShot')) ##: cache ?
+        ssBase = GPath(oblivionIni.getSetting(
+            u'Display', u'SScreenShotBaseName', u'ScreenShot'))
         if ssBase.head:
             self.dir = self.dir.join(ssBase.head)
         newData = {}
