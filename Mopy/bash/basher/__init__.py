@@ -1546,7 +1546,7 @@ class INIPanel(SashPanel):
 
     def ShowPanel(self):
         changed = self.trackedInfo.refreshTracked()
-        changed = set([x for x in changed if x != bosh.oblivionIni.path])
+        changed = set([x for x in changed if x != bosh.oblivionIni.path]) ##: ???
         if self.GetChoice() in changed:
             self.RefreshPanel()
         super(INIPanel, self).ShowPanel()
