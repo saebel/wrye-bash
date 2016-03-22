@@ -1605,14 +1605,15 @@ class IniFile(object):
         deleted_settings = {}
         if not tweakPath.exists() or tweakPath.isdir():
             return ini_settings,deleted_settings
+        default_section = self.defaultSection
         if tweakPath != self.path:
             encoding = 'utf-8'
         else:
             encoding = self.encoding
-        reComment = self.reComment
-        reSection = self.reSection
-        reDeleted = self.reDeletedSetting
-        reSetting = self.reSetting
+        reComment = IniFile.reComment
+        reSection = IniFile.reSection
+        reDeleted = IniFile.reDeletedSetting
+        reSetting = IniFile.reSetting
         if lineNumbers:
             def makeSetting(match,lineNo): return match.group(2).strip(),lineNo
         else:
@@ -1635,7 +1636,8 @@ class IniFile(object):
                     sectionSettings = ini_settings.setdefault(section,{})
                 elif maSetting:
                     if sectionSettings is None:
-                        sectionSettings = ini_settings.setdefault(LString(self.defaultSection),{})
+                        sectionSettings = ini_settings.setdefault(LString(
+                            default_section), {})
                         if setCorrupted: self.isCorrupted = True
                     sectionSettings[LString(maSetting.group(1))] = makeSetting(maSetting,i)
                 elif maDeleted:
