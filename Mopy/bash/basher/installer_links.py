@@ -308,7 +308,7 @@ class Installer_Wizard(OneItemLink, _InstallerLink):
                         bass.dirs['mods'].join(iniFile))
                 if bosh.iniInfos[outFile.tail].tweak_status in (20, -10):
                     continue # applied or invalid
-                bosh.iniInfos.ini.applyTweakFile(outFile)
+                bosh.iniInfos.ini.applyTweakFile(outFile) ##: will create oblivion ini
                 lastApplied = outFile.tail
             else:
                 # We wont automatically apply tweaks to anything other than Oblivion.ini or an ini from

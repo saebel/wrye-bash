@@ -2133,7 +2133,7 @@ class OblivionIni(IniFile):
         IniFile.applyTweakFile(self,tweakPath)
 
     #--BSA Redirection --------------------------------------------------------
-    def getBsaRedirection(self):
+    def _getBsaRedirection(self):
         """Returns True if BSA redirection is active."""
         section,key = bush.game.ini.bsaRedirection
         if not section or not key: return False
@@ -2149,7 +2149,7 @@ class OblivionIni(IniFile):
         aiBsaMTime = time.mktime((2006, 1, 2, 0, 0, 0, 0, 2, 0))
         if aiBsa.exists() and aiBsa.mtime > aiBsaMTime:
             aiBsa.mtime = aiBsaMTime
-        if doRedirect == self.getBsaRedirection():
+        if doRedirect == self._getBsaRedirection():
             return
         # Skyrim does not have an Archive Invalidation File
         if doRedirect and not aiBsa.exists():
@@ -2166,7 +2166,7 @@ class OblivionIni(IniFile):
         if doRedirect:
             archives.insert(0,u'ArchiveInvalidationInvalidated!.bsa')
         sArchives = u', '.join(archives)
-        self.saveSetting(u'Archive',u'sArchiveList',sArchives)
+        self.saveSetting(u'Archive',u'sArchiveList',sArchives)  ##: will create oblivion ini
 
 #------------------------------------------------------------------------------
 class PluginsFullError(BoltError):
@@ -4237,7 +4237,7 @@ class SaveInfos(FileInfos):
         """Sets SLocalSavePath in Oblivion.ini."""
         self.table.save()
         self.localSave = localSave
-        oblivionIni.saveSetting(bush.game.saveProfilesKey[0],
+        oblivionIni.saveSetting(bush.game.saveProfilesKey[0],  ##: will create oblivion ini
                                 bush.game.saveProfilesKey[1],
                                 localSave)
         self._initDB(dirs['saveBase'].join(self.localSave))
@@ -5899,7 +5899,7 @@ class InstallersData(_DataStore):
         self.bashDir.makedirs()
         #--Archive invalidation
         if settings.get('bash.bsaRedirection'):
-            oblivionIni.setBsaRedirection(True)
+            oblivionIni.setBsaRedirection(True) ##: will create oblivion ini
         #--Load Installers.dat if not loaded - will set changed to True
         changed = not self.loaded and self.__load(progress)
         #--Last marker
