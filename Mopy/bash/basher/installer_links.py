@@ -322,7 +322,7 @@ class Installer_Wizard(OneItemLink, _InstallerLink):
                     BashFrame.iniList.panel.AddOrSelectIniDropDown(
                         bass.dirs['mods'].join(iniFile))
                 if bosh.iniInfos[outFile.tail].status == 20: continue # applied
-                bosh.iniInfos.ini.applyTweakFile(outFile)
+                bosh.iniInfos.ini.applyTweakFile(outFile) ##: will create oblivion ini
                 lastApplied = outFile.tail
             else:
                 # We wont automatically apply tweaks to anything other than Oblivion.ini or an ini from

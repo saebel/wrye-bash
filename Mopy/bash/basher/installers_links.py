@@ -394,7 +394,7 @@ class Installers_BsaRedirection(AppendableLink, BoolLink):
             bsaFile.scan()
             resetCount = bsaFile.reset()
             #balt.showOk(self,_(u"BSA Hashes reset: %d") % (resetCount,))
-        bosh.oblivionIni.setBsaRedirection(bosh.settings[self.key])
+        bosh.oblivionIni.setBsaRedirection(bosh.settings[self.key]) ##: will create oblivion ini
 
 class Installers_ConflictsReportShowsInactive(_Installers_BoolLink_Refresh):
     """Toggles option to show inactive on conflicts report."""
