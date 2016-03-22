@@ -589,8 +589,8 @@ class INIList(balt.UIList):
         # from INI_Delete - expensive but I can't allow default tweaks deletion
 
     def set_item_format(self, fileName, item_format):
-        fileInfo = self.data_store[fileName]
-        status = fileInfo.getStatus()
+        iniInfo = self.data_store[fileName]
+        status = iniInfo.status
         #--Image
         checkMark = 0
         icon = 0    # Ok tweak, not applied
