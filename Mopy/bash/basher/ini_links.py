@@ -220,9 +220,9 @@ class INI_CreateNew(OneItemLink):
         bosh.iniInfos.refresh()
         oldTarget = self.window.data_store.ini
         target = bosh.BestIniFile(path)
-        settings,deleted = target.getSettings()
-        new_settings,deleted = oldTarget.getSettings()
-        deleted = {}
+        settings,_unused = target.getSettings()
+        new_settings,_unused = oldTarget.getSettings()
+        del _unused
         for section in settings:
             if section in new_settings:
                 for setting in settings[section]:

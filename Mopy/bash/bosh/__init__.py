@@ -1582,7 +1582,7 @@ class IniFile(object):
     def getSetting(self,section,key,default=None):
         """Gets a single setting from the file."""
         section,key = map(bolt.LString,(section,key))
-        ini_settings,deleted_settings = self.getSettings()
+        ini_settings, _unused = self.getSettings()
         if section in ini_settings:
             return ini_settings[section].get(key,default)
         else:
@@ -1653,7 +1653,7 @@ class IniFile(object):
 
     def getTweakFileLines(self,tweakPath):
         """Get a line by line breakdown of the tweak file, in this format:
-        [(fulltext,section,setting,value,status,ini_line_number)]
+        [(fulltext,section,setting,value,status,ini_line_number, deleted)]
         where:
         fulltext = full line of text from the ini
         section = the section that is being edited
@@ -1664,7 +1664,8 @@ class IniFile(object):
               0: does exist, but it's a heading or something else without a value
              10: does exist, but value isn't the same
              20: does exist, and value is the same
-        ini_line_number = line number in the ini that this tweak applies to"""
+        ini_line_number = line number in the ini that this tweak applies to
+        deleted: deleted line (?)"""
         lines = []
         if not tweakPath.exists() or tweakPath.isdir():
             return lines
@@ -2886,7 +2887,7 @@ class INIInfo(FileInfo):
             return -10
         match = False
         mismatch = 0
-        settings,deleted = ini.getSettings()
+        settings, _unused = ini.getSettings()
         for key in tweak:
             if key not in settings:
                 self._status = -10
@@ -2933,7 +2934,7 @@ class INIInfo(FileInfo):
         path = self.getPath()
         ini = iniInfos.ini
         tweak,deletes = ini.getTweakFileSettings(path)
-        settings,deleted_settings = ini.getSettings()
+        settings,_unused = ini.getSettings()
         text = [u'%s:' % path.stail]
 
         if len(tweak) == 0:
