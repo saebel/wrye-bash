@@ -641,7 +641,8 @@ class INIList(balt.UIList):
         if not self.warn_tweak_game_ini(choice): return
         #--No point applying a tweak that's already applied
         file_ = tweak.dir.join(hitItem)
-        self.data_store.ini.applyTweakFile(file_)
+        self.data_store.ini.applyTweakFile(file_) ##: will create oblivion ini
+        # if not existing (_and_ won't refresh invalid status)
         self.RefreshUIValid(hitItem)
 
     @staticmethod

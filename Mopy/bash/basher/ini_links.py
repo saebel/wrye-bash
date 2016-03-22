@@ -170,7 +170,7 @@ class INI_Apply(EnabledLink):
             needsRefresh = True
             if bass.dirs['tweaks'].join(item).isfile():
                 self.window.data_store.ini.applyTweakFile(
-                    bass.dirs['tweaks'].join(item))
+                    bass.dirs['tweaks'].join(item)) ##: will create oblivion ini
             else:
                 self.window.data_store.ini.applyTweakFile(
                     bass.dirs['defaultTweaks'].join(item))
