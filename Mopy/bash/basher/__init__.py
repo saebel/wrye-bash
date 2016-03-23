@@ -590,7 +590,7 @@ class INIList(balt.UIList):
 
     def set_item_format(self, fileName, item_format):
         iniInfo = self.data_store[fileName]
-        status = iniInfo.status
+        status = iniInfo.getStatus()
         #--Image
         checkMark = 0
         icon = 0    # Ok tweak, not applied
