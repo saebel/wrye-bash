@@ -630,18 +630,22 @@ class INIList(balt.UIList):
         #-- If we're applying to Oblivion.ini, show the warning
         iniPanel = self.panel
         choice = iniPanel.GetChoice().tail
-        if choice in bush.game.iniFiles:
-            message = (_(u"Apply an ini tweak to %s?") % choice
-                       + u'\n\n' +
-                       _(u"WARNING: Incorrect tweaks can result in CTDs and even damage to you computer!")
-                       )
-            if not balt.askContinue(self, message, 'bash.iniTweaks.continue',
-                                    _(u"INI Tweaks")): return
+        if not self.warn_tweak_game_ini(choice): return
         #--No point applying a tweak that's already applied
         file_ = tweak.dir.join(hitItem)
         self.data_store.ini.applyTweakFile(file_)
         iniPanel.RefreshIniDetails(hitItem)
         self.RefreshUIValid()
+
+    def warn_tweak_game_ini(self, choice):
+        ask = True
+        if choice in bush.game.iniFiles:
+            message = (_(u"Apply an ini tweak to %s?") % choice + u'\n\n' + _(
+                u"WARNING: Incorrect tweaks can result in CTDs and even "
+                u"damage to your computer!"))
+            ask = balt.askContinue(self, message, 'bash.iniTweaks.continue',
+                                   _(u"INI Tweaks"))
+        return ask
 
     def _select(self, tweakfile): self.panel.SelectTweak(tweakfile)
 

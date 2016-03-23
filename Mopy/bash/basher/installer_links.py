@@ -315,20 +315,13 @@ class Installer_Wizard(OneItemLink, _InstallerLink):
                     # User what tweaks to apply manually.
                     manuallyApply.append((outFile,iniFile))
                     continue
-                # Editing an INI file from this installer is ok, but editing Oblivion.ini
-                # give a warning message
-                if any([iniFile == x for x in bush.game.iniFiles]):
-                    message = (_(u'Apply an ini tweak to %s?')
-                               + u'\n\n' +
-                               _(u'WARNING: Incorrect tweaks can result in CTDs and even damage to you computer!')
-                               ) % iniFile.sbody
-                    if not self._askContinue(message,
-                                             'bash.iniTweaks.continue',
-                                             _(u'INI Tweaks')): continue
                 if BashFrame.iniList is not None:
+                    # Editing an INI file from this installer is ok,
+                    # but editing Oblivion.ini give a warning message
+                    if not BashFrame.iniList.warn_tweak_game_ini(iniFile): continue
                     BashFrame.iniList.panel.AddOrSelectIniDropDown(
                         bass.dirs['mods'].join(iniFile))
-                if bosh.iniInfos[outFile.tail] == 20: continue
+                if bosh.iniInfos[outFile.tail].status == 20: continue # applied
                 bosh.iniInfos.ini.applyTweakFile(outFile)
                 lastApplied = outFile.tail
             else:
