@@ -195,9 +195,7 @@ class NotebookPanel(wx.Panel):
     def ClosePanel(self):
         """To be manually called when containing frame is closing. Use for
         saving data, scrollpos, etc."""
-        # ScreensPanel is not backed up by a pickle file
-        if isinstance(self, ScreensPanel): return
-        if hasattr(self, 'listData'):
+        if hasattr(self, 'listData'): # must be a _DataStore instance
         # the only SashPanels that do not have this attribute are ModDetails
         # and SaveDetails that use a MasterList whose data is initially {}
             self.listData.save()
