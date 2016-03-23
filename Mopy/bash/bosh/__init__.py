@@ -1562,6 +1562,7 @@ class IniFile(object):
         self._ini_mod_time = self.path.mtime if self.path.exists() else 0
         self._settings_cache = self.__empty
         self._settings_cache_with_line_nums = self.__empty
+        self._deleted_cache = self.__empty
 
     @staticmethod
     def formatMatch(path):
@@ -1582,26 +1583,28 @@ class IniFile(object):
     def getSetting(self,section,key,default=None):
         """Gets a single setting from the file."""
         section,key = map(bolt.LString,(section,key))
-        ini_settings, _unused = self.getSettings()
+        ini_settings = self.getSettings()
         if section in ini_settings:
             return ini_settings[section].get(key,default)
         else:
             return default
 
-    def getSettings(self, with_line_numbers=False):
+    def getSettings(self, with_line_numbers=False, with_deleted=False):
         """Gets settings for self."""
-        if not self.path.exists() or self.path.isdir(): return {}, {}
+        if not self.path.exists() or self.path.isdir():
+            return ({}, {}) if with_deleted else {}
         psize, pmtime = self.path.size, self.path.mtime
-        if self._settings_cache is not self.__empty and (
-            self._ini_size == psize) and (self._ini_mod_time == pmtime):
-            deleted = {}
-        else:
+        if self._settings_cache is self.__empty or self._ini_size != psize \
+                or self._ini_mod_time != pmtime:
             self._ini_size, self._ini_mod_time = psize, pmtime
-            self._settings_cache_with_line_nums, deleted = self.getTweakFileSettings(self.path, lineNumbers=True)
+            self._settings_cache_with_line_nums, self._deleted_cache = self.getTweakFileSettings(self.path, lineNumbers=True)
             self._settings_cache = dict(
                 (k, dict((x, y[0]) for x, y in v.iteritems())) for k, v in
                 self._settings_cache_with_line_nums.iteritems())
-        return copy.copy(self._settings_cache if not with_line_numbers else self._settings_cache_with_line_nums), deleted
+        cached = copy.copy(self._settings_cache if not with_line_numbers else
+                           self._settings_cache_with_line_nums)
+        if with_deleted: return cached, copy.copy(self._deleted_cache)
+        return cached
 
     def getTweakFileSettings(self,tweakPath,lineNumbers=False):
         """Gets settings in a tweak file."""
@@ -1673,7 +1676,7 @@ class IniFile(object):
             encoding = 'utf-8'
         else:
             encoding = self.encoding
-        iniSettings,deletedSettings = self.getSettings(with_line_numbers=True)
+        iniSettings,deletedSettings = self.getSettings(with_line_numbers=True, with_deleted=True)
         reComment = self.reComment
         reSection = self.reSection
         reDeleted = self.reDeletedSetting
@@ -2863,7 +2866,7 @@ class INIInfo(FileInfo):
 
     @property
     def status(self):
-        self.__target_ini, old = iniInfos.ini, self.__target_ini
+        self.__target_ini, old = self.getFileInfos().ini, self.__target_ini
         if self._status is None or self.__target_ini != old: self.getStatus()
         return self._status
 
@@ -2887,12 +2890,12 @@ class INIInfo(FileInfo):
             return -10
         match = False
         mismatch = 0
-        settings, _unused = ini.getSettings()
+        ini_settings = ini.getSettings()
         for key in tweak:
-            if key not in settings:
+            if key not in ini_settings:
                 self._status = -10
                 return -10
-            settingsKey = settings[key]
+            settingsKey = ini_settings[key]
             tweakKey = tweak[key]
             for item in tweakKey:
                 if item not in settingsKey:
@@ -2934,7 +2937,7 @@ class INIInfo(FileInfo):
         path = self.getPath()
         ini = iniInfos.ini
         tweak,deletes = ini.getTweakFileSettings(path)
-        settings,_unused = ini.getSettings()
+        ini_settings = ini.getSettings()
         text = [u'%s:' % path.stail]
 
         if len(tweak) == 0:
@@ -2961,11 +2964,11 @@ class INIInfo(FileInfo):
                                  _(u'Tweak format: INI')))
         else:
             for key in tweak:
-                if key not in settings:
+                if key not in ini_settings:
                     text.append(u' [%s] - %s' % (key,_(u'Invalid Header')))
                 else:
                     for item in tweak[key]:
-                        if item not in settings[key]:
+                        if item not in ini_settings[key]:
                             text.append(u' [%s] %s' % (key, item))
         if len(text) == 1:
             text.append(u' None')
