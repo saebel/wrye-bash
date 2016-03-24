@@ -320,7 +320,7 @@ class Installer_Wizard(OneItemLink, _InstallerLink):
                     # but editing Oblivion.ini give a warning message
                     if not BashFrame.iniList.warn_tweak_game_ini(iniFile): continue
                     BashFrame.iniList.panel.AddOrSelectIniDropDown(
-                        bass.dirs['mods'].join(iniFile))
+                        bass.dirs['mods'].join(iniFile)) ##: waht if iniFile is Oblivion.ini ???
                 if bosh.iniInfos[outFile.tail].status == 20: continue # applied
                 bosh.iniInfos.ini.applyTweakFile(outFile) ##: will create oblivion ini
                 lastApplied = outFile.tail
