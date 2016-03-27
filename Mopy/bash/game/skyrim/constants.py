@@ -17343,7 +17343,6 @@ inventoryTypes = ('NPC_','CONT',)
 FID = 'FID' #--Used by MelStruct classes to indicate fid elements.
 
 # Record type to name dictionary
-
 record_type_name = {
     'ALCH': _(u'Potions'),
     'AMMO': _(u'Ammo'),
@@ -17358,3 +17357,6 @@ record_type_name = {
     'SPEL': _(u'Spells'),
     'WEAP': _(u'Weapons'),
 }
+
+# xEdit menu string and key for expert setting
+xEdit_expert = (_(u'Tes5Edit Expert'), 'tes5View.iKnowWhatImDoing')
