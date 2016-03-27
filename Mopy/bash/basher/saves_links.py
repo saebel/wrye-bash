@@ -127,8 +127,9 @@ class Saves_ProfilesData(balt.ListEditorData):
 
     def remove(self,profile):
         """Removes load list."""
+        assert profile
         profileSaves = u'Saves\\'+profile+u'\\'
-        #--Can't remove active or Default directory.
+        #--Can't remove active or Default directory (default is not passed in)
         if bosh.saveInfos.localSave == profileSaves:
             balt.showError(self.parent,_(u'Active profile cannot be removed.'))
             return False
