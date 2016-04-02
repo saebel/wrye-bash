@@ -4737,7 +4737,7 @@ class Installer(object):
     _extensions_to_process = set()
 
     @staticmethod
-    def init_global_skips(os_sep=os.path.sep):
+    def init_global_skips():
         """Update _global_skips with functions deciding if 'fileLower' (docs !)
         must be skipped, based on global settings. Should be updated on boot
         and on flipping skip settings - and nowhere else hopefully."""
@@ -4880,7 +4880,7 @@ class Installer(object):
             _obse = partial(__skipExecutable,
                     desc=_(u'%s plugin DLL') % bush.game.se.shortName,
                     ext=(_(u'a dll')),
-                    exeDir=(bush.game.se.shortName.lower() + u'\\'),
+                    exeDir=(bush.game.se.shortName.lower() + os_sep),
                     dialogTitle=bush.game.se.shortName + _(u' DLL Warning'))
             Installer._executables_process[u'.dll'] = \
             Installer._executables_process[u'.dlx'] = _obse
@@ -4888,14 +4888,14 @@ class Installer(object):
             _asi = partial(__skipExecutable,
                    desc=_(u'%s plugin ASI') % bush.game.sd.longName,
                    ext=(_(u'an asi')),
-                   exeDir=(bush.game.sd.installDir.lower() + u'\\'),
+                   exeDir=(bush.game.sd.installDir.lower() + os_sep),
                    dialogTitle=bush.game.sd.longName + _(u' ASI Warning'))
             Installer._executables_process[u'.asi'] = _asi
         if bush.game.sp.shortName:
             _jar = partial(__skipExecutable,
                    desc=_(u'%s patcher JAR') % bush.game.sp.longName,
                    ext=(_(u'a jar')),
-                   exeDir=(bush.game.sp.installDir.lower() + u'\\'),
+                   exeDir=(bush.game.sp.installDir.lower() + os_sep),
                    dialogTitle=bush.game.sp.longName + _(u' JAR Warning'))
             Installer._executables_process[u'.jar'] = _jar
 
@@ -4985,7 +4985,7 @@ class Installer(object):
                     Installer._silentSkipsEnd): continue
             sub = u''
             if type_ == 2: #--Complex archive
-                split = file.split(u'\\', 1)
+                split = file.split(os_sep, 1)
                 if len(split) > 1:
                     # redefine file, excluding the subpackage directory
                     sub,file = split
@@ -4999,7 +4999,7 @@ class Installer(object):
                     # looking for esp's for the wizard espmMap, wizard.txt
                     # and readme's
                     rootLower,fileExt = splitExt(fileLower)
-                    rootLower = rootLower.split(u'\\',1)
+                    rootLower = rootLower.split(os_sep, 1)
                     if len(rootLower) == 1: rootLower = u''
                     else: rootLower = rootLower[0]
                     skip = True
@@ -5033,7 +5033,7 @@ class Installer(object):
                         continue
             sub_esps = espmMap[sub] # add sub key to the espmMap
             rootLower,fileExt = splitExt(fileLower)
-            rootLower = rootLower.split(u'\\',1)
+            rootLower = rootLower.split(os_sep, 1)
             if len(rootLower) == 1: rootLower = u''
             else: rootLower = rootLower[0]
             fileStartsWith = fileLower.startswith
@@ -5077,8 +5077,8 @@ class Installer(object):
             if dest is None: dest = file
             string_extensions = {u'.strings', u'.dlstrings', u'.ilstrings'}
             if rootLower in docDirs:
-                dest = u'\\'.join((u'Docs',file[len(rootLower)+1:]))
-            elif (renameStrings and fileStartsWith(u'strings\\') and
+                dest = os_sep.join((u'Docs', file[len(rootLower)+1:]))
+            elif (renameStrings and fileStartsWith(u'strings' + os_sep) and
                   fileExt in string_extensions):
                 langSep = fileLower.rfind(u'_')
                 extSep = fileLower.rfind(u'.')
@@ -5094,9 +5094,10 @@ class Installer(object):
                 pass
             elif not rootLower:
                 if fileLower == u'package.jpg':
-                    dest = self.packagePic = u''.join((u'Docs\\',archiveRoot,u'.package.jpg'))
+                    dest = self.packagePic = u''.join(
+                        (u'Docs' + os_sep, archiveRoot, u'.package.jpg'))
                 elif fileExt in imageExts:
-                    dest = u''.join((u'Docs\\',file))
+                    dest = os_sep.join((u'Docs', file))
             if fileExt in commonlyEditedExts: ##: will track all the txt files in Docs/
                 InstallersData.miscTrackedFiles.track(dirs['mods'].join(dest))
             #--Save
@@ -5121,7 +5122,7 @@ class Installer(object):
         # basically just care for skips and complex/simple packages
         #--Sort file names
         def fscSortKey(fsc):
-            dirFile = fsc[0].lower().rsplit(u'\\',1)
+            dirFile = fsc[0].lower().rsplit(os_sep, 1)
             if len(dirFile) == 1: dirFile.insert(0,u'')
             return dirFile
         sortKeys = dict((x,fscSortKey(x)) for x in fileSizeCrcs)
@@ -6331,14 +6332,15 @@ class InstallersData(_DataStore):
         if settings['bash.installers.skipDistantLOD']:
             newSDirs = (x for x in newSDirs if x.lower() != u'distantlod')
         if settings['bash.installers.skipLandscapeLODMeshes']:
-            newSDirs = (x for x in newSDirs if x.lower() != u'meshes\\landscape\\lod')
+            newSDirs = (x for x in newSDirs if x.lower() != os.path.join(
+                u'meshes', u'landscape', u'lod'))
         if settings['bash.installers.skipScreenshots']:
             newSDirs = (x for x in newSDirs if x.lower() != u'screenshots')
         # LOD textures
         if settings['bash.installers.skipLandscapeLODTextures'] and settings[
             'bash.installers.skipLandscapeLODNormals']:
-            newSDirs = (x for x in newSDirs if
-                        x.lower() != u'textures\\landscapelod\\generated')
+            newSDirs = (x for x in newSDirs if x.lower() != os.path.join(
+                u'textures', u'landscapelod', u'generated'))
         if setSkipOBSE:
             newSDirs = (x for x in newSDirs if
                         x.lower() != bush.game.se.shortName.lower())
