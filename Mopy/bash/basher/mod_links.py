@@ -1464,6 +1464,7 @@ class Mod_CopyToEsmp(EnabledLink):
         self.text = _(u'Copy to Esp') if self.isEsm else _(u'Copy to Esm')
 
     def _enable(self):
+        """Disable if selected are mixed esm/p's or inverted mods."""
         for item in self.selected:
             fileInfo = bosh.modInfos[item]
             if fileInfo.isInvertedMod() or fileInfo.isEsm() != self.isEsm:
