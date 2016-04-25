@@ -285,10 +285,14 @@ class Game(object):
         # game's master might be out of place (if using timestamps for load
         # ordering or a manually edited loadorder.txt) so move it up
         masterName = self.mod_infos.masterName
+        masterDex = 0
         try:
             masterDex = lord.index(masterName)
+            _addedFiles = set()
         except ValueError:
-            raise bolt.BoltError(u'%s is missing or corrupted' % masterName)
+            if not masterName in self.mod_infos:
+                raise bolt.BoltError(u'%s is missing or corrupted' % masterName)
+            _addedFiles = {masterName}
         if masterDex > 0:
             bolt.deprint(u'%s has index %d (must be 0)' % (masterName, masterDex))
             lord.remove(masterName)
@@ -300,7 +304,7 @@ class Game(object):
         mods_set = set(self.mod_infos.keys())
         _removedFiles = loadorder_set - mods_set # may remove corrupted mods
         # present in text file, we are supposed to take care of that
-        _addedFiles = mods_set - loadorder_set
+        _addedFiles |= mods_set - loadorder_set
         # Remove non existent plugins from load order
         lord[:] = [x for x in lord if x not in _removedFiles]
         indexFirstEsp = self._indexFirstEsp(lord)
@@ -314,7 +318,11 @@ class Game(object):
         # Append new plugins to load order
         for mod in _addedFiles:
             if self.mod_infos[mod].isEsm():
-                lord.insert(indexFirstEsp, mod)
+                if  not mod == masterName:
+                    lord.insert(indexFirstEsp, mod)
+                else:
+                    lord.insert(0, masterName)
+                    bolt.deprint(u'%s inserted to Load order' % masterName)
                 indexFirstEsp += 1
             else: lord.append(mod)
         # end textfile get
