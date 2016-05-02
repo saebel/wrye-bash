@@ -69,7 +69,7 @@ import wx.gizmos
 from .. import bush, bosh, bolt, bass, env, load_order
 from ..bass import Resources
 from ..bolt import BoltError, CancelError, SkipError, GPath, SubProgress, \
-    deprint, Path, AbstractError, formatInteger, formatDate, round_size
+    deprint, AbstractError, formatInteger, formatDate, round_size
 from ..bosh import omods, CoSaves
 from ..cint import CBash
 from ..patcher.patch_files import PatchFile
@@ -974,7 +974,7 @@ class ModList(_ModsUIList):
     #--Helpers ---------------------------------------------
     def _checkUncheckMod(self, *mods):
         removed = []
-        notDeactivatable = [ Path(x) for x in bush.game.nonDeactivatableFiles ]
+        notDeactivatable = load_order.must_be_active_if_present()
         refreshNeeded = False
         for item in mods:
             if item in removed or item in notDeactivatable: continue
