@@ -3806,7 +3806,8 @@ class ModInfos(FileInfos):
         """Remove mods and their children from selected, can only raise if
         doSave=True."""
         if not isinstance(fileName, (set, list)): fileName = {fileName}
-        fileNames = set(fileName)
+        notDeactivatable = load_order.must_be_active_if_present()
+        fileNames = set(x for x in fileName if x not in notDeactivatable)
         sel = set(self.plugins.selected)
         diff = sel - fileNames
         if len(diff) == len(sel): return
