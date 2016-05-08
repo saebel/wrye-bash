@@ -130,6 +130,7 @@ def loIndexCachedOrMax(mod):
 
 def activeIndexCached(mod): return cached_lord.activeIndex(mod)
 
+# Get and set API
 def SaveLoadOrder(lord, acti=None):
     """Save the Load Order (rewrite loadorder.txt or set modification times).
 
@@ -177,6 +178,7 @@ def GetLo(cached=False, cached_active=True):
     _updateCache(loadOrder, active)
     return cached_lord
 
+# API helpers
 def usingTxtFile():
     return bush.game.fsName == u'Fallout4' or bush.game.fsName == u'Skyrim'
 

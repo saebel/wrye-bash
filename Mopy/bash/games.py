@@ -246,6 +246,8 @@ class Game(object):
         raise bolt.AbstractError
 
     def _persist_load_order(self, lord, active):
+        """Persist the fixed lord to disk - will break conflicts for
+        timestamp games."""
         raise bolt.AbstractError
 
     def _persist_active_plugins(self, active, lord):
@@ -317,15 +319,12 @@ class Game(object):
         _addedFiles |= mods_set - loadorder_set
         # Remove non existent plugins from load order
         lord[:] = [x for x in lord if x not in _removedFiles]
-        indexFirstEsp = self._indexFirstEsp(lord)
         # See if any esm files are loaded below an esp and reorder as necessary
-        for mod in lord[indexFirstEsp:]:
-            if mod in self.mod_infos and self.mod_infos[mod].isEsm():
-                lord.remove(mod)
-                lord.insert(indexFirstEsp, mod)
-                indexFirstEsp += 1
-                _reordered = True
+        ol = lord[:]
+        lord.sort(key=lambda m: not self.mod_infos[m].isEsm())
+        _reordered |= ol != lord
         # Append new plugins to load order
+        indexFirstEsp = self._indexFirstEsp(lord)
         for mod in _addedFiles:
             if self.mod_infos[mod].isEsm():
                 if  not mod == masterName:
@@ -448,7 +447,7 @@ class TimestampGame(Game):
         return active
 
     def _persist_load_order(self, lord, active):
-        assert set(self.mod_infos.keys()) == set(lord)
+        assert set(self.mod_infos.keys()) == set(lord) # (lord must be valid)
         if len(lord) == 0: return
         current = self.mod_infos.calculateLO()
         # break conflicts
