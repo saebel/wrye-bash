@@ -972,27 +972,25 @@ class _Mod_Patch_Update(_Mod_BP_Link):
                 u"merged or imported into the Bashed Patch."), ]
             group.extend(deactivate)
             checklists.append(group)
-        if checklists:
-            dialog = ListBoxes(
-                Link.Frame, _(u"Deactivate these mods prior to patching"),
-                _(u"The following mods should be deactivated prior to building"
-                  u" the patch."), checklists, bCancel=_(u'Skip'))
-            if dialog.askOkModal():
-                deselect = set()
-                for (lst, key) in [(unfiltered, unfilteredKey),
-                                   (merge, mergeKey),
-                                   (noMerge, noMergeKey),
-                                   (deactivate, deactivateKey), ]:
-                    deselect |= set(dialog.getChecked(key, lst))
-                if deselect:
-                    with balt.BusyCursor():
-                        for mod in deselect:
-                            bosh.modInfos.unselect(mod, doSave=False)
-                        bosh.modInfos.plugins.saveActive()
-                        # just active mods (no modtimes changes), still needed:
-                        bosh.modInfos.refreshInfoLists()
-                        self.window.RefreshUI(refreshSaves=True) # True ?
-            dialog.Destroy()
+        if not checklists: return
+        with ListBoxes(Link.Frame,
+            _(u"Deactivate these mods prior to patching"),
+            _(u"The following mods should be deactivated prior to building "
+              u"the patch."), checklists, bCancel=_(u'Skip')) as dialog:
+            if not dialog.askOkModal(): return
+            deselect = set()
+            for (lst, key) in [(unfiltered, unfilteredKey),
+                               (merge, mergeKey),
+                               (noMerge, noMergeKey),
+                               (deactivate, deactivateKey), ]:
+                deselect |= set(dialog.getChecked(key, lst))
+            if not deselect: return
+        with balt.BusyCursor():
+            for mod in deselect: bosh.modInfos.unselect(mod, doSave=False)
+            bosh.modInfos.plugins.saveActive()
+            # just active mods (no modtimes changes), still needed:
+            bosh.modInfos.refreshInfoLists()
+        self.window.RefreshUI(refreshSaves=True)
 
 class Mod_Patch_Update(TransLink, _Mod_Patch_Update):
 
