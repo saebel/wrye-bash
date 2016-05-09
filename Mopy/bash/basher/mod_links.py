@@ -866,26 +866,28 @@ class _Mod_Patch_Update(_Mod_BP_Link):
             msg = msg % (self.selected[0].s, old_mode, new_mode)
             title = _(u'Import %s config ?') % old_mode
             if not self._askYes(msg, title=title): importConfig = False
-        with balt.BusyCursor(): # just to show users that it hasn't stalled but is doing stuff.
-            prog = None
-            if self.doCBash:
-                CBash_PatchFile.patchTime = fileInfo.mtime
-                CBash_PatchFile.patchName = fileInfo.name
-                prog = bolt.Progress()
-            else:
-                PatchFile.patchTime = fileInfo.mtime
-                PatchFile.patchName = fileInfo.name
-                if bosh.settings['bash.CBashEnabled']:
-                    # CBash is enabled, so it's very likely that the merge info currently is from a CBash mode scan
-                    prog = balt.Progress(_(u"Mark Mergeable") + u' ' * 30)
-            if prog is not None:
-                with prog: # cbash mode had verbose True...
-                    bosh.modInfos.rescanMergeable(bosh.modInfos.data, prog,
-                                                  self.doCBash)
-                self.window.RefreshUI(refreshSaves=False) # rescanned mergeable
+        prog = None
+        if self.doCBash:
+            CBash_PatchFile.patchTime = fileInfo.mtime
+            CBash_PatchFile.patchName = fileInfo.name
+            prog = bolt.Progress()
+        else:
+            PatchFile.patchTime = fileInfo.mtime
+            PatchFile.patchName = fileInfo.name
+            if bosh.settings['bash.CBashEnabled']:
+                # CBash is enabled, so it's very likely that the merge info currently is from a CBash mode scan
+                prog = balt.Progress(_(u"Mark Mergeable") + u' ' * 30)
+        ActivePriortoPatch = [x for x in load_order.cached_lord.loadOrder[
+                                         :load_order.loIndexCached(fileName)]
+                              if load_order.isActiveCached(x)]
+        if prog is not None:
+            with prog:
+                bosh.modInfos.rescanMergeable(ActivePriortoPatch, prog,
+                                              self.doCBash)
+            self.window.RefreshUI(refreshSaves=False) # rescanned mergeable
 
         #--Check if we should be deactivating some plugins
-        self._ask_deactivate_mergeable(fileName)
+        self._ask_deactivate_mergeable(ActivePriortoPatch)
 
         previousMods = set()
         missing = collections.defaultdict(list)
@@ -922,10 +924,7 @@ class _Mod_Patch_Update(_Mod_BP_Link):
                          importConfig) as patchDialog: patchDialog.ShowModal()
         return fileName
 
-    def _ask_deactivate_mergeable(self, fileName):
-        def less(modName, dex=load_order.loIndexCached):
-            return dex(modName) < dex(fileName)
-        ActivePriortoPatch = [x for x in load_order.activeCached() if less(x)]
+    def _ask_deactivate_mergeable(self, ActivePriortoPatch):
         unfiltered = [x for x in ActivePriortoPatch if
                       u'Filter' in bosh.modInfos[x].getBashTags()]
         merge = [x for x in ActivePriortoPatch if
