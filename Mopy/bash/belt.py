@@ -780,7 +780,10 @@ class WryeParser(ScriptParser.Parser):
             self.parent = parent
             self.installer = installer
             self.bArchive = bArchive
-            self.path = path
+            self._path = path
+            if installer.fileRootIdex:
+                root_path = installer.extras_dict.get('root_path', u'')
+                self._path = self._path.join(root_path)
             self.bAuto = bAuto
             self.page = None
 
@@ -902,6 +905,8 @@ class WryeParser(ScriptParser.Parser):
         self.SetKeyword(u'Cancel', self.kwdCancel, 0, 1)
         self.SetKeyword(u'RequireVersions', self.kwdRequireVersions, 1, 4)
 
+    @property
+    def path(self): return self._path
 
     def Begin(self, file):
         self.variables.clear()
