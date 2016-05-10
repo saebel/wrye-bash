@@ -2440,7 +2440,7 @@ class FileInfo(_AFileInfo):
     def getStatus(self):
         """Returns status of this file -- which depends on status of masters.
         0:  Good
-        10: Out of order master
+        20: Out of order master
         30: Missing master(s)."""
         #--Worst status from masters
         if self.masterNames:
@@ -2452,7 +2452,10 @@ class FileInfo(_AFileInfo):
             return status
         #--Misordered?
         self.masterOrder = tuple(modInfos.getOrdered(self.masterNames))
-        if self.masterOrder != self.masterNames:
+        loads_before_its_masters = self.isMod() and self.masterOrder and \
+                                   load_order.loIndexCached(
+            self.masterOrder[-1]) > load_order.loIndexCached(self.name)
+        if self.masterOrder != self.masterNames or loads_before_its_masters:
             return 20
         else:
             return status
