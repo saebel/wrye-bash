@@ -4440,7 +4440,7 @@ class Installer(object):
     #--Member data
     persistent = ('archive', 'order', 'group', 'modified', 'size', 'crc',
         'fileSizeCrcs', 'type', 'isActive', 'subNames', 'subActives',
-        'dirty_sizeCrc', 'comments', 'readMe', 'packageDoc', 'packagePic',
+        'dirty_sizeCrc', 'comments', 'extras_dict', 'packageDoc', 'packagePic',
         'src_sizeCrcDate', 'hasExtraData', 'skipVoices', 'espmNots', 'isSolid',
         'blockSize', 'overrideSkips', 'remaps', 'skipRefresh', 'fileRootIdex')
     volatile = ('data_sizeCrc', 'skipExtFiles', 'skipDirFiles', 'status',
@@ -4598,7 +4598,7 @@ class Installer(object):
         self.type = 0 #--Package type: 0: unset/invalid; 1: simple; 2: complex
         self.subNames = []
         self.subActives = []
-        self.readMe = None # set by refreshDataSizeCrc (unused for now)
+        self.extras_dict = {} # hack to add more persistent attributes
         #--User Only
         self.skipVoices = False
         self.hasExtraData = False
@@ -4691,8 +4691,10 @@ class Installer(object):
         """Used by unpickler to recreate object."""
         self.initDefault()
         map(self.__setattr__,self.persistent,values)
-        if self.dirty_sizeCrc is None:
-            self.dirty_sizeCrc = {} #--Use empty dict instead.
+        if not isinstance(self.extras_dict, dict):
+            self.extras_dict = {}
+            if self.fileRootIdex: # we need to add 'root_path_lower' key
+                self._find_root_index()
         dest_scr = self.refreshDataSizeCrc()
         if self.overrideSkips:
             InstallersData.overridden_skips.update(dest_scr.keys())
@@ -4807,7 +4809,7 @@ class Installer(object):
                         dest = u''.join((u'Docs\\', archiveRoot, fileExt))
                     else:
                         dest = u''.join((u'Docs\\', file_relative))
-                    self.readMe = dest
+                    # self.extras_dict['readMe'] = dest
                 elif fileLower == u'package.txt':
                     dest = self.packageDoc = u''.join(
                         (u'Docs\\', archiveRoot, u'.package.txt'))
@@ -4943,7 +4945,7 @@ class Installer(object):
         type_    = self.type
         #--Init to empty
         self.hasWizard = self.hasBCF = self.hasReadme = False
-        self.readMe = self.packageDoc = self.packagePic = None
+        self.packageDoc = self.packagePic = None # = self.extras_dict['readMe']
         for attr in {'skipExtFiles','skipDirFiles','espms'}:
             object.__getattribute__(self,attr).clear()
         dest_src = {}
@@ -4981,7 +4983,10 @@ class Installer(object):
         reReadMeMatch = Installer.reReadMe.match
         #--Scan over fileSizeCrcs
         rootIdex = self.fileRootIdex
+        root_path = self.extras_dict.get('root_path_lower', u'')
         for full,size,crc in self.fileSizeCrcs:
+            if rootIdex: # exclude all files that are not under root_dir
+                if not full.lower().startswith(root_path): continue
             file = full[rootIdex:]
             fileLower = file.lower()
             if fileLower.startswith( # skip top level '--', 'fomod' etc
@@ -5120,22 +5125,20 @@ class Installer(object):
         #--Done (return dest_src for install operation)
         return dest_src
 
-    @staticmethod
-    def _find_root_index(fileSizeCrcs, _os_sep=os_sep,
-                         skips_start=_silentSkipsStart):
+    def _find_root_index(self, _os_sep=os_sep, skips_start=_silentSkipsStart):
         # basically just care for skips and complex/simple packages
         #--Sort file names
         def fscSortKey(fsc):
             dirFile = fsc[0].lower().rsplit(os_sep, 1)
             if len(dirFile) == 1: dirFile.insert(0,u'')
             return dirFile
-        sortKeys = dict((x,fscSortKey(x)) for x in fileSizeCrcs)
-        fileSizeCrcs.sort(key=sortKeys.__getitem__)
+        sortKeys = dict((x, fscSortKey(x)) for x in self.fileSizeCrcs)
+        self.fileSizeCrcs.sort(key=sortKeys.__getitem__)
         #--Find correct starting point to treat as BAIN package
         dataDirsPlus = Installer.dataDirsPlus
         layout = {}
         layoutSetdefault = layout.setdefault
-        for full, size, crc in fileSizeCrcs:
+        for full, size, crc in self.fileSizeCrcs:
             fileLower = full.lower()
             if fileLower.startswith(skips_start): continue
             frags = fileLower.split(_os_sep)
@@ -5184,6 +5187,7 @@ class Installer(object):
                             # Multiple folders, stop here even if it's no good
                             break
                     rootIdex = len(rootStr)
+                    self.extras_dict['root_path_lower'] = rootStr
         return rootIdex
 
     def refreshBasic(self, archive, progress, recalculate_project_crc=True):
@@ -5194,7 +5198,7 @@ class Installer(object):
                 x.replace(os_sep, u'') for x in _silentSkipsStart)):
         """Extract file/size/crc and BAIN structure info from installer."""
         self._refreshSource(archive, progress, recalculate_project_crc)
-        self.fileRootIdex = rootIdex = self._find_root_index(self.fileSizeCrcs)
+        self.fileRootIdex = rootIdex = self._find_root_index()
         # fileRootIdex now points to the start in the file strings to ignore
         #--Type, subNames
         type_ = 0
@@ -5202,12 +5206,16 @@ class Installer(object):
         subNameSet.add(u'') # set(u'') == set() (unicode is iterable), so add
         reDataFileSearch = self.reDataFile.search
         dataDirsPlus = self.dataDirsPlus
+        root_path = self.extras_dict.get('root_path_lower', u'')
         for full, size, crc in self.fileSizeCrcs:#break if type=1 else churn on
-            full = full[rootIdex:]
             frags = full.split(_os_sep)
+            if root_path: # exclude all files that are not under root_dir
+                f0_lower = frags[0].lower()
+                if f0_lower != root_path[:-1]: continue # chop off os_sep
+                frags = frags[1:]
+            f0_lower = frags[0].lower()
             nfrags = len(frags)
             #--Type 1 ? break ! data files/dirs are not allowed in type 2 top
-            f0_lower = frags[0].lower()
             if (nfrags == 1 and reDataFileSearch(f0_lower) or
                 nfrags > 1 and f0_lower in dataDirsPlus):
                 type_ = 1
