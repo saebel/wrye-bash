@@ -278,6 +278,7 @@ class Installer_Wizard(OneItemLink, _InstallerLink):
                     doIt(self.selected, ui_refresh, progress)
             finally:
                 self.iPanel.RefreshUIMods(*ui_refresh)
+        else: ui_refresh = [False, False]
         self._apply_tweaks(installer, ret, ui_refresh)
 
     def _apply_tweaks(self, installer, ret, ui_refresh):
