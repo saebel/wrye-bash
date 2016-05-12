@@ -201,6 +201,12 @@ def undo_load_order():
     _current_deque_index -= 1
     return __redo()
 
+def redo_load_order():
+    global _current_deque_index
+    if _current_deque_index == len(_saved_load_orders) - 1: return cached_lord
+    _current_deque_index += 1
+    return __redo()
+
 def __redo():
     previous = _saved_load_orders[_current_deque_index]
     return SaveLoadOrder(previous.loadOrder, previous.activeOrdered,
