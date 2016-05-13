@@ -4935,11 +4935,10 @@ class Installer(object):
                     Installer._silentSkipsEnd): continue
             sub = u''
             if type_ == 2: #--Complex archive
-                sub = file.split(u'\\',1)
-                if len(sub) == 1:
-                    sub = u''
-                else: # redefine file, excluding the subpackage directory
-                    sub,file = sub
+                split = file.split(u'\\', 1)
+                if len(split) > 1:
+                    # redefine file, excluding the subpackage directory
+                    sub,file = split
                     fileLower = file.lower()
                     if fileLower.startswith(Installer._silentSkipsStart):
                         continue # skip subpackage level '--', 'fomod' etc
