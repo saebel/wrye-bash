@@ -4090,9 +4090,12 @@ class ModFile:
         return mapper
 
     def convertToLongFids(self,types=None):
-        """Convert fids to long format (modname,objectindex)."""
+        """Convert fids to long format (modname,objectindex).
+        :type types: list[str] | tuple[str] | set[str]
+        """
         mapper = self.getLongMapper()
         if types is None: types = self.tops.keys()
+        else: assert isinstance(types, (list, tuple, set))
         selfTops = self.tops
         for type in types:
             if type in selfTops:
