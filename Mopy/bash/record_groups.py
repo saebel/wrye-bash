@@ -271,7 +271,7 @@ class MobObjects(MobBase):
     def updateRecords(self,srcBlock,mapper,mergeIds):
         """Looks through all of the records in 'srcBlock', and updates any
         records in self that exist within the data in 'block'."""
-        fids = set([record.fid for record in self.records])
+        fids = set(record.fid for record in self.records)
         for record in srcBlock.getActiveRecords():
             if mapper(record.fid) in fids:
                 record = record.getTypeCopy(mapper)
