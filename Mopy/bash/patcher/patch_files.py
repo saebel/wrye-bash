@@ -311,7 +311,7 @@ class PatchFile(_PFile, ModFile):
         """Scans file and overwrites own records with modfile records."""
         #--Keep all MGEFs
         modFile.convertToLongFids(('MGEF',))
-        if 'MGEF' in modFile.tops:
+        if 'MGEF' in modFile.tops: ##: takes time !
             for record in modFile.MGEF.getActiveRecords():
                 self.MGEF.setRecord(record.getTypeCopy())
         #--Merger, override.

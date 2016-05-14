@@ -4006,7 +4006,7 @@ class ModFile(object):
                 try:
                     if topClass:
                         self.tops[label] = topClass(header, self.loadFactory)
-                        self.tops[label].load(ins, unpack and (topClass != MobBase))
+                        self.tops[label].load(ins, unpack and (topClass != MobBase)) # here is the memory bound - records ?
                     else:
                         self.topsSkipped.add(label)
                         insSeek(size-header.__class__.size,1,type + '.' + label)
