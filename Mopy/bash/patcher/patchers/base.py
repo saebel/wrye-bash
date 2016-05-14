@@ -510,7 +510,7 @@ class ImportPatcher(AImportPatcher, ListPatcher):
             if reModExt.search(srcPath.s):
                 if srcPath not in bosh.modInfos: continue
                 srcInfo = bosh.modInfos[srcPath]
-                fullNames.readFromMod(srcInfo)
+                fullNames.readFromMod(srcInfo) # memory jumps here
             else:
                 if srcPath not in self.patches_set: continue
                 try:
