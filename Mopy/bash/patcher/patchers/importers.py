@@ -2399,7 +2399,7 @@ class NamesPatcher(ImportPatcher):
             if reModExt.search(srcFile.s):
                 if srcPath not in bosh.modInfos: continue
                 srcInfo = bosh.modInfos[GPath(srcFile)]
-                fullNames.readFromMod(srcInfo)
+                fullNames.readFromMod(srcInfo) # memory jumps here
             else:
                 if srcPath not in patchesList: continue
                 try:

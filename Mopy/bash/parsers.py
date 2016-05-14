@@ -4002,7 +4002,7 @@ class ModFile:
                 try:
                     if topClass:
                         selfTops[label] = topClass(header,selfLoadFactory)
-                        selfTops[label].load(ins,unpack and (topClass != MobBase))
+                        selfTops[label].load(ins,unpack and (topClass != MobBase)) # here is the memory bound - records ?
                     else:
                         selfTopsSkipAdd(label)
                         insSeek(size-header.__class__.size,1,type + '.' + label)

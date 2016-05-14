@@ -214,7 +214,7 @@ class PatchDialog(balt.Dialog):
                 patchName.mtime = patchTime
             else:
                 patchFile.initFactories(SubProgress(progress,0.1,0.2)) #no speeding needed/really possible (less than 1/4 second even with large LO)
-                patchFile.scanLoadMods(SubProgress(progress,0.2,0.8)) #try to speed this up!
+                patchFile.scanLoadMods(SubProgress(progress,0.2,0.8)) #try to speed this up! reloads all mods, which were loaded per patcher in patchFile.init_patchers_data
                 patchFile.buildPatch(log,SubProgress(progress,0.8,0.9))#no speeding needed/really possible (less than 1/4 second even with large LO)
                 #--Save
                 progress.setCancel(False)
@@ -305,6 +305,7 @@ class PatchDialog(balt.Dialog):
             balt.playSound(self.parent, bass.inisettings['SoundError'].s)
             raise
         finally:
+            # del self.patchers[:] # does not help
             if self.doCBash:
                 try: patchFile.Current.Close()
                 except: pass
