@@ -3928,7 +3928,11 @@ class LoadFactory:
             return None
 
 class ModFile:
-    """TES4 file representation."""
+    """TES4 file representation.
+
+    Will load only the top record types specified in its LoadFactory. Overrides
+    __getattr__ to return its collection of records for a top record type.
+    """
     def __init__(self, fileInfo,loadFactory=None):
         self.fileInfo = fileInfo
         self.loadFactory = loadFactory or LoadFactory(True)
