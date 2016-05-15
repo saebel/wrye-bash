@@ -6927,6 +6927,15 @@ class InstallersData(_DataStore):
                 (InstallerArchive, InstallerProject))
         return filter(installable, installerKeys)
 
+    def filterPackages(self, installerKeys):
+        """Remove markers from installerKeys.
+        :param installerKeys: an iterable of bolt.Path
+        :return: a list of installable packages/projects bolt.Path
+        """
+        def __package(x): # type: 0: unset/invalid; 1: simple; 2: complex
+            return isinstance(self[x], (InstallerArchive, InstallerProject))
+        return filter(__package, installerKeys)
+
 #------------------------------------------------------------------------------
 class ModGroups:
     """Groups for mods with functions for importing/exporting from/to text file."""
