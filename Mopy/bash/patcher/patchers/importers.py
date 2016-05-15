@@ -1613,7 +1613,7 @@ class ImportRelations(ImportPatcher):
         # id_relations[mainLongid]. # WAS id_relations -renamed for _buildPatch
 
     def initData(self,progress):
-        """Get names from source files."""
+        """Get relations from source files."""
         factionRelations = self._parse_sources(progress, parser=FactionRelations)
         if not factionRelations: return
         #--Finish

@@ -22,7 +22,16 @@
 #
 # =============================================================================
 
-"""This module contains all of the basic types used to read ESP/ESM mod files"""
+"""This module contains classes used to read ESP/ESM mod files. Mod files
+are composed of records. They have a file header record and then a series of
+records that are themselves composed by a header and a data part. Key classes:
+
+BaseRecordHeader: base class for record's _headers_. Implemented on a per
+game basis in game/<game>/__init__.py
+ModReader: reads a mod file, record after record. Uses the game specific
+override of BaseRecordHeader.
+
+"""
 import zlib
 import StringIO
 import os
@@ -1701,7 +1710,6 @@ class MelRecord(MreRecord):
 
 #------------------------------------------------------------------------------
 #-- Common Records
-
 #------------------------------------------------------------------------------
 class MreHeaderBase(MelRecord):
     """File header.  Base class for all 'TES4' like records"""
