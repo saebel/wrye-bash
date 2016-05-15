@@ -3915,12 +3915,14 @@ class LoadFactory:
             (self.recTypes & {'REFR', 'ACHR', 'ACRE', 'PGRD', 'LAND'}) or
             (topType == 'WRLD' and 'LAND' in self.recTypes))
 
-    def getTopClass(self,type):
-        """Returns top block class for top block type, or None."""
-        if type in self.topTypes:
-            if   type == 'DIAL': return MobDials
-            elif type == 'CELL': return MobICells
-            elif type == 'WRLD': return MobWorlds
+    def getTopClass(self, top_rec_type):
+        """Return top block class for top block type, or None.
+        :rtype: type[record_groups.MobBase]
+        """
+        if top_rec_type in self.topTypes:
+            if   top_rec_type == 'DIAL': return MobDials
+            elif top_rec_type == 'CELL': return MobICells
+            elif top_rec_type == 'WRLD': return MobWorlds
             else: return MobObjects
         elif self.keepAll:
             return MobBase
@@ -3966,9 +3968,10 @@ class ModFile:
         """Load file."""
         progress = progress or bolt.Progress()
         progress.setFull(1.0)
-        #--Header
         with ModReader(self.fileInfo.name,self.fileInfo.getPath().open('rb')) as ins:
-            header = ins.unpackRecHeader()
+            insRecHeader = ins.unpackRecHeader
+            #--TES4 Header of the mod file
+            header = insRecHeader()
             self.tes4 = bush.game.MreHeader(header,ins,True)
             #--Strings
             self.strings.clear()
@@ -3988,7 +3991,6 @@ class ModFile:
             #--Raw data read
             subProgress.setFull(ins.size)
             insAtEnd = ins.atEnd
-            insRecHeader = ins.unpackRecHeader
             selfGetTopClass = self.loadFactory.getTopClass
             selfTopsSkipAdd = self.topsSkipped.add
             insSeek = ins.seek
