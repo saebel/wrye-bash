@@ -4594,7 +4594,7 @@ class Installer(object):
         #--For InstallerProject's, cache if refresh projects is skipped
         self.src_sizeCrcDate = {}
         #--Set by refreshBasic
-        self.fileRootIdex = 0
+        self.fileRootIdex = 0 # unused - just used in setstate
         self.type = 0 #--Package type: 0: unset/invalid; 1: simple; 2: complex
         self.subNames = []
         self.subActives = []
@@ -4691,11 +4691,19 @@ class Installer(object):
         """Used by unpickler to recreate object."""
         self.initDefault()
         map(self.__setattr__,self.persistent,values)
+        rescan = False
         if not isinstance(self.extras_dict, dict):
             self.extras_dict = {}
             if self.fileRootIdex: # we need to add 'root_path_lower' key
-                self._find_root_index()
-        dest_scr = self.refreshDataSizeCrc()
+                rescan = True
+        elif self.fileRootIdex and not self.extras_dict.get('root_path', u''):
+            self.extras_dict.pop('root_path_lower', None)
+            rescan = True
+        if rescan:
+            dest_scr = self.refreshBasic( # for people that used my wip branch
+                bass.dirs['installers'].join(self.archive),
+                bolt.Progress(), recalculate_project_crc=False)
+        else: dest_scr = self.refreshDataSizeCrc()
         if self.overrideSkips:
             InstallersData.overridden_skips.update(dest_scr.keys())
 
@@ -4982,11 +4990,11 @@ class Installer(object):
         reModExtMatch = reModExt.match
         reReadMeMatch = Installer.reReadMe.match
         #--Scan over fileSizeCrcs
-        rootIdex = self.fileRootIdex
-        root_path = self.extras_dict.get('root_path_lower', u'')
+        root_path = self.extras_dict.get('root_path', u'')
+        rootIdex = len(root_path)
         for full,size,crc in self.fileSizeCrcs:
             if rootIdex: # exclude all files that are not under root_dir
-                if not full.lower().startswith(root_path): continue
+                if not full.startswith(root_path): continue
             file = full[rootIdex:]
             fileLower = file.lower()
             if fileLower.startswith( # skip top level '--', 'fomod' etc
@@ -5135,22 +5143,23 @@ class Installer(object):
         sortKeys = dict((x, fscSortKey(x)) for x in self.fileSizeCrcs)
         self.fileSizeCrcs.sort(key=sortKeys.__getitem__)
         #--Find correct starting point to treat as BAIN package
+        self.extras_dict.pop('root_path_lower', None)
+        self.extras_dict.pop('root_path', None)
+        self.fileRootIdex = 0
         dataDirsPlus = Installer.dataDirsPlus
         layout = {}
         layoutSetdefault = layout.setdefault
         for full, size, crc in self.fileSizeCrcs:
             fileLower = full.lower()
             if fileLower.startswith(skips_start): continue
-            frags = fileLower.split(_os_sep)
+            frags = full.split(_os_sep)
             if len(frags) == 1:
                 # Files in the root of the package, start there
-                rootIdex = 0
                 break
             else:
                 dirName = frags[0]
                 if dirName not in layout and layout:
                     # A second directory in the archive root, start in the root
-                    rootIdex = 0
                     break
                 root = layoutSetdefault(dirName,{'dirs':{},'files':False})
                 for frag in frags[1:-1]:
@@ -5158,37 +5167,33 @@ class Installer(object):
                 # the last frag is a file, so its parent dir has files
                 root['files'] = True
         else:
-            if not layout:
-                rootIdex = 0
-            else:
-                rootStr = layout.keys()[0]
-                if rootStr in dataDirsPlus:
-                    rootIdex = 0
+            if not layout: return
+            rootStr = layout.keys()[0]
+            if rootStr.lower() in dataDirsPlus: return
+            root = layout[rootStr]
+            rootStr = u''.join((rootStr, _os_sep))
+            while True:
+                if root['files']:
+                    # There are files in this folder, call it the starting point
+                    break
+                rootDirs = root['dirs']
+                rootDirKeys = rootDirs.keys()
+                if len(rootDirKeys) == 1:
+                    # Only one subfolder, see if it's either 'Data', or an accepted
+                    # Data sub-folder
+                    rootDirKey = rootDirKeys[0]
+                    rootDirKeyL = rootDirKey.lower()
+                    if rootDirKeyL in dataDirsPlus or rootDirKeyL == u'data':
+                        # Found suitable starting point
+                        break
+                    # Keep looking deeper
+                    root = rootDirs[rootDirKey]
+                    rootStr = u''.join((rootStr, rootDirKey, _os_sep))
                 else:
-                    root = layout[rootStr]
-                    rootStr = u''.join((rootStr, _os_sep))
-                    while True:
-                        if root['files']:
-                            # There are files in this folder, call it the starting point
-                            break
-                        rootDirs = root['dirs']
-                        rootDirKeys = rootDirs.keys()
-                        if len(rootDirKeys) == 1:
-                            # Only one subfolder, see if it's either 'Data', or an accepted
-                            # Data sub-folder
-                            rootDirKey = rootDirKeys[0]
-                            if rootDirKey in dataDirsPlus or rootDirKey == u'data':
-                                # Found suitable starting point
-                                break
-                            # Keep looking deeper
-                            root = rootDirs[rootDirKey]
-                            rootStr = u''.join((rootStr, rootDirKey, _os_sep))
-                        else:
-                            # Multiple folders, stop here even if it's no good
-                            break
-                    rootIdex = len(rootStr)
-                    self.extras_dict['root_path_lower'] = rootStr
-        return rootIdex
+                    # Multiple folders, stop here even if it's no good
+                    break
+            self.extras_dict['root_path'] = rootStr # keeps case
+            self.fileRootIdex = len(rootStr)
 
     def refreshBasic(self, archive, progress, recalculate_project_crc=True):
         return self._refreshBasic(archive, progress, recalculate_project_crc)
@@ -5198,7 +5203,7 @@ class Installer(object):
                 x.replace(os_sep, u'') for x in _silentSkipsStart)):
         """Extract file/size/crc and BAIN structure info from installer."""
         self._refreshSource(archive, progress, recalculate_project_crc)
-        self.fileRootIdex = rootIdex = self._find_root_index()
+        self._find_root_index()
         # fileRootIdex now points to the start in the file strings to ignore
         #--Type, subNames
         type_ = 0
@@ -5206,12 +5211,11 @@ class Installer(object):
         subNameSet.add(u'') # set(u'') == set() (unicode is iterable), so add
         reDataFileSearch = self.reDataFile.search
         dataDirsPlus = self.dataDirsPlus
-        root_path = self.extras_dict.get('root_path_lower', u'')
+        root_path = self.extras_dict.get('root_path', u'')
         for full, size, crc in self.fileSizeCrcs:#break if type=1 else churn on
             frags = full.split(_os_sep)
             if root_path: # exclude all files that are not under root_dir
-                f0_lower = frags[0].lower()
-                if f0_lower != root_path[:-1]: continue # chop off os_sep
+                if frags[0] != root_path[:-1]: continue # chop off os_sep
                 frags = frags[1:]
             f0_lower = frags[0].lower()
             nfrags = len(frags)
