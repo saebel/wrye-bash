@@ -31,7 +31,7 @@ from ..parsers import LoadFactory, ModFile, MasterSet
 from ..brec import MreRecord, ModError
 from ..balt import showWarning
 from ..bolt import GPath, BoltError, CancelError, SubProgress, deprint, \
-    Progress, StateError, formatDate
+    Progress, StateError, formatDate, AbstractError
 from ..cint import ObModFile, FormID, dump_record, ObCollection, MGEFCode
 from ..record_groups import MobObjects
 
@@ -146,6 +146,8 @@ class _PFile:
             for key, value in sorted(self.aliases.iteritems()):
                 log(u'* %s >> %s' % (key.s, value.s))
 
+    def init_patchers_data(self, progress): raise AbstractError
+
 class PatchFile(_PFile, ModFile):
     """Defines and executes patcher configuration."""
 
@@ -183,7 +185,7 @@ class PatchFile(_PFile, ModFile):
             return fid
         return keep
 
-    def initData(self,progress):
+    def init_patchers_data(self, progress):
         """Gives each patcher a chance to get its source data."""
         if not len(self.patchers): return
         progress = progress.setFull(len(self.patchers))
@@ -374,7 +376,7 @@ class CBash_PatchFile(_PFile, ObModFile):
         self.races_data = {'EYES': [], 'HAIR': []}
         _PFile.__init__(self, patchers)
 
-    def initData(self,progress):
+    def init_patchers_data(self, progress):
         """Gives each patcher a chance to get its source data."""
         if not len(self.patchers): return
         progress = progress.setFull(len(self.patchers))
