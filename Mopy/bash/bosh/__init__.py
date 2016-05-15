@@ -5044,7 +5044,7 @@ class Installer(object):
                     elif fileLower in bethFiles:
                         self.hasBethFiles = True
                         skipDirFilesDiscard(file)
-                        skipDirFilesAdd(file + u' ' + _(u'[Bethesda Content]'))
+                        skipDirFilesAdd(_(u'[Bethesda Content]') + u' ' + file)
                         continue
                     elif not rootLower and reModExtMatch(fileExt):
                         #--Remap espms as defined by the user
@@ -5083,7 +5083,7 @@ class Installer(object):
             if fileLower in bethFiles:
                 self.hasBethFiles = True
                 if bethFilesSkip:
-                    skipDirFilesAdd(full + u' ' + _(u'[Bethesda Content]'))
+                    skipDirFilesAdd(_(u'[Bethesda Content]') + u' ' + full)
                     if sub_esps and sub_esps[-1].lower() == fileLower:
                         del sub_esps[-1] # added in extensions processing
                     continue
