@@ -5328,6 +5328,9 @@ class Installer(object):
     def open_readme(self): pass
     def open_wizard(self): pass
 
+    def __repr__(self):
+        return self.__class__.__name__ + u"(" + repr(self.archive) + u")"
+
     #--ABSTRACT ---------------------------------------------------------------
     def _refreshSource(self, archive, progress, recalculate_project_crc):
         """Refresh fileSizeCrcs, size, and modified from source
