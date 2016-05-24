@@ -63,6 +63,7 @@ def _inner_loop(id_data, keep, records, type, type_count):
         type_count[type] += 1
 
 def _buildPatch(self, log, inner_loop=_inner_loop, types=None):
+    # type: (ImportPatcher, bolt.LogFile, Callable, list[str]) -> None
     """Common buildPatch() pattern of:
 
         GraphicsPatcher, ActorImporter, KFFZPatcher, DeathItemPatcher,
@@ -79,13 +80,12 @@ def _buildPatch(self, log, inner_loop=_inner_loop, types=None):
     modFileTops = self.patchFile.tops
     keep = self.patchFile.getKeeper()
     id_data = self.id_data
-    type_count = {}
+    type_count = collections.defaultdict(int)
     types = filter(lambda x: x in modFileTops,
                types if types else map(lambda x: x.classType, self.srcClasses))
-    for type in types:
-        type_count[type] = 0
-        records = modFileTops[type].records
-        inner_loop(id_data, keep, records, type, type_count)
+    for top_mod_rec in types:
+        records = modFileTops[top_mod_rec].records
+        inner_loop(id_data, keep, records, top_mod_rec, type_count)
     # noinspection PyUnusedLocal
     id_data = None # cleanup to save memory
     # Log
@@ -2789,8 +2789,7 @@ class NpcFacePatcher(_ANpcFacePatcher,ImportPatcher):
                     count += 1
         self._patchLog(log,count)
 
-    def _plog(self,log,count):
-        log(self.__class__.logMsg % count)
+    def _plog(self,log,count): log(self.__class__.logMsg % count)
 
 class CBash_NpcFacePatcher(_ANpcFacePatcher,CBash_ImportPatcher):
     autoKey = {u'NpcFaces', u'NpcFacesForceFullImport', u'Npc.HairOnly',
@@ -3200,14 +3199,7 @@ class StatsPatcher(ImportPatcher):
             allCounts.append((group,count,counts))
         self._patchLog(log, allCounts)
 
-    def _plog(self,log,allCounts):
-        log(self.__class__.logMsg)
-        for type,count,counts in allCounts:
-            if not count: continue
-            typeName = game.record_type_name[type]
-            log(u'* %s: %d' % (typeName,count))
-            for modName in sorted(counts):
-                log(u'  * %s: %d' % (modName.s,counts[modName]))
+    def _plog(self,log,allCounts): self._plog2(log, allCounts)
 
 class CBash_StatsPatcher(CBash_ImportPatcher):
     """Import stats from mod file."""
@@ -3357,14 +3349,7 @@ class SpellsPatcher(ImportPatcher):
         allCounts.append(('SPEL',count,counts))
         self._patchLog(log, allCounts)
 
-    def _plog(self,log,allCounts):
-        log(self.__class__.logMsg)
-        for type,count,counts in allCounts:
-            if not count: continue
-            typeName = {'SPEL':_(u'Spells'),}[type] #TODO: typeName=u'Spells' ?
-            log(u'* %s: %d' % (typeName,count))
-            for modName in sorted(counts):
-                log(u'  * %s: %d' % (modName.s,counts[modName]))
+    def _plog(self,log,allCounts): self._plog2(log, allCounts)
 
 class CBash_SpellsPatcher(CBash_ImportPatcher):
     """Import spell changes from mod files."""
