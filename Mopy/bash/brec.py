@@ -1502,7 +1502,7 @@ class MreRecord(object):
             myCopy.data = self.data
             myCopy.load(unpack=True)
         else:
-            myCopy = copy.deepcopy(self)
+            myCopy = copy.deepcopy(self) ##: deepcostly
         if mapper and not myCopy.longFids:
             myCopy.convertFids(mapper,True)
         myCopy.changed = True
