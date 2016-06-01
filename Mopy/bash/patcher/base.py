@@ -63,6 +63,26 @@ class _Abstract_Patcher(object):
         return self.__class__.name
 
     #--Config Phase -----------------------------------------------------------
+    """This phase runs in basher.patcher_dialog.PatchDialog#__init__, before
+    the dialog is shown, to update the patch options based on the previous
+    config for this patch stored in modInfos.table[patch]['bash.patch.configs']
+    If no config is saved then the class default_XXX values are used for the
+    relevant attributes.
+    Most patchers just save their enabled state, except the AListPatcher
+    subclasses - which save their choices - and the AliasesPatcher that saves
+    the aliases. This situation is not satisfactory:
+    - Config essentially belongs to the gui side of things. the patchers
+    should only operate on their sources - decoupling the patchers API from
+    the config setting API will simplify the code (needed !) and let us
+    concentrate on the patching process. IOW when tests come around we don't
+    want to run the dialog, do we ?
+    - saving Bash patch configs is fragile (keyed by patch name, yak). To
+    refactor this however the code must be at a single place, not 3 (
+    patchers/, basher/, bosh/)
+    Resolution: a top level patch_config.py module and moving the get/save
+    config to gui_patchers. We must track in the patchers/ package how those
+    config attributes are used.
+    """
     def __init__(self):
         """Initialization of common values to defaults."""
         self.patchFile = None
@@ -76,7 +96,7 @@ class _Abstract_Patcher(object):
 
     def getConfig(self,configs):
         """Get config from configs dictionary and/or set to default."""
-        config = configs.setdefault(self.__class__.__name__,{})
+        config = configs.setdefault(self.__class__.__name__, {})
         self.isEnabled = config.get('isEnabled',
                                     self.__class__.default_isEnabled)
         # return the config dict for this patcher to read additional values
