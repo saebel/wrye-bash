@@ -21,13 +21,17 @@
 #  https://github.com/wrye-bash
 #
 # =============================================================================
-
+import copy
 import string
+import re
 import wx
+# Internal
 from .. import bass, bosh, bush, balt
 from ..balt import fill, StaticText, vSizer, checkBox, Button, hsbSizer, Links, \
     SeparatorLink, CheckLink, Link, vspace
 from ..bolt import GPath
+
+reCsvExt = re.compile(ur'\.csv$', re.I | re.U)
 
 class _PatcherPanel(object):
     """Basic patcher panel with no options."""
@@ -68,6 +72,24 @@ class _PatcherPanel(object):
         """Layout control components."""
         if self.gConfigPanel:
             self.gConfigPanel.Layout()
+
+    #--Config Phase -----------------------------------------------------------
+    # CONFIG DEFAULTS
+    default_isEnabled = False
+
+    def getConfig(self,configs):
+        """Get config from configs dictionary and/or set to default."""
+        config = configs.setdefault(self.__class__.__name__, {})
+        self.isEnabled = config.get('isEnabled',
+                                    self.__class__.default_isEnabled)
+        # return the config dict for this patcher to read additional values
+        return config
+
+    def saveConfig(self,configs):
+        """Save config to configs dictionary."""
+        config = configs[self.__class__.__name__] = {}
+        config['isEnabled'] = self.isEnabled
+        return config # return the config dict for this patcher to further edit
 
 #------------------------------------------------------------------------------
 class _AliasesPatcherPanel(_PatcherPanel):
@@ -111,6 +133,25 @@ class _AliasesPatcherPanel(_PatcherPanel):
             if len(fields) != 2 or not fields[0] or not fields[1]: continue
             self.aliases[GPath(fields[0])] = GPath(fields[1])
         self.SetAliasText()
+
+    #--Config Phase -----------------------------------------------------------
+    # CONFIG DEFAULTS
+    default_aliases = {}
+    def getConfig(self,configs):
+        """Get config from configs dictionary and/or set to default."""
+        config = super(_AliasesPatcherPanel, self).getConfig(configs)
+        #--Update old configs to use Paths instead of strings.
+        self.aliases = dict(# map(GPath, item) gives a list (item is a tuple)
+            map(GPath, item) for item in
+            config.get('aliases', self.__class__.default_aliases).iteritems())
+        return config
+
+    def saveConfig(self,configs):
+        """Save config to configs dictionary."""
+        #--Toss outdated configCheck data.
+        config = super(_AliasesPatcherPanel, self).saveConfig(configs)
+        config['aliases'] = self.aliases
+        return config
 
 #------------------------------------------------------------------------------
 class _ListPatcherPanel(_PatcherPanel):
@@ -327,6 +368,57 @@ class _ListPatcherPanel(_PatcherPanel):
         except AttributeError:
             pass #ListBox instead of CheckListBox
         self.gConfigPanel.GetParent().gPatchers.SetFocusFromKbd()
+
+    #--Config Phase -----------------------------------------------------------
+    # ADDITIONAL CONFIG DEFAULTS FOR LIST PATCHER
+    default_autoIsChecked = True
+    default_configItems   = []
+    default_configChecks  = {}
+    default_configChoices = {}
+    def getConfig(self,configs):
+        """Get config from configs dictionary and/or set to default."""
+        config = super(_ListPatcherPanel, self).getConfig(configs)
+        self.autoIsChecked = self.forceAuto or config.get(
+            'autoIsChecked', self.__class__.default_autoIsChecked)
+        self.configItems = copy.deepcopy(
+            config.get('configItems', self.__class__.default_configItems))
+        self.configChecks = copy.deepcopy(
+            config.get('configChecks', self.__class__.default_configChecks))
+        self.configChoices = copy.deepcopy(
+            config.get('configChoices', self.__class__.default_configChoices))
+        #--Verify file existence
+        newConfigItems = []
+        for srcPath in self.configItems:
+            if ((bosh.reModExt.search(srcPath.s) and srcPath in bosh.modInfos) or
+                 reCsvExt.search(srcPath.s) and srcPath in self.patches_set):
+                newConfigItems.append(srcPath)
+        self.configItems = newConfigItems
+        if self.__class__.forceItemCheck:
+            for item in self.configItems:
+                self.configChecks[item] = True
+        #--Make sure configChoices are set (if choiceMenu exists).
+        if self.choiceMenu:
+            for item in self.configItems:
+                self.getChoice(item)
+        #--AutoItems?
+        if self.autoIsChecked:
+            self.getAutoItems()
+        return config
+
+    def saveConfig(self, configs):
+        """Save config to configs dictionary."""
+        #--Toss outdated configCheck data.
+        config = super(_ListPatcherPanel, self).saveConfig(configs)
+        listSet = set(self.configItems)
+        self.configChecks = config['configChecks'] = dict(
+            [(key, value) for key, value in self.configChecks.iteritems() if
+             key in listSet])
+        self.configChoices = config['configChoices'] = dict(
+            [(key, value) for key, value in self.configChoices.iteritems() if
+             key in listSet])
+        config['configItems'] = self.configItems
+        config['autoIsChecked'] = self.autoIsChecked
+        return config
 
 #------------------------------------------------------------------------------
 class _TweakPatcherPanel(_PatcherPanel):
@@ -563,6 +655,25 @@ class _TweakPatcherPanel(_PatcherPanel):
             pass #ListBox instead of CheckListBox
         self.gConfigPanel.GetParent().gPatchers.SetFocusFromKbd()
 
+    #--Config Phase -----------------------------------------------------------
+    def getConfig(self, configs):
+        """Get config from configs dictionary and/or set to default."""
+        config = super(_TweakPatcherPanel, self).getConfig(configs)
+        self.tweaks = copy.deepcopy(self.__class__.tweaks)
+        for tweak in self.tweaks:
+            tweak.get_tweak_config(config)
+        return config
+
+    def saveConfig(self, configs):
+        """Save config to configs dictionary."""
+        config = super(_TweakPatcherPanel, self).saveConfig(configs)
+        for tweak in self.tweaks:
+            tweak.save_tweak_config(config)
+        self.enabledTweaks = [tweak for tweak in self.tweaks if
+                              tweak.isEnabled]
+        self.isActive = len(self.enabledTweaks) > 0 ##: NOT HERE !!!!
+        return config
+
 #------------------------------------------------------------------------------
 class _DoublePatcherPanel(_TweakPatcherPanel, _ListPatcherPanel):
     """Patcher panel with option to select source elements."""
@@ -614,6 +725,11 @@ class _DoublePatcherPanel(_TweakPatcherPanel, _ListPatcherPanel):
         self.SetItems(self.getAutoItems())
         self.SetTweaks()
         return gConfigPanel
+
+    #--Config Phase -----------------------------------------------------------
+    # CONFIG DEFAULTS
+    default_isEnabled = True
+    # isActive will be set to True in initPatchFile
 
 #------------------------------------------------------------------------------
 # GUI Patcher classes - mixins of patchers and the GUI patchers defined above -
