@@ -879,6 +879,23 @@ class _GmstTweakerPanel(_TweakPatcherPanel):
             tweak.get_tweak_config(config)
 
 #------------------------------------------------------------------------------
+class _ImporterPatcherPanel(_ListPatcherPanel):
+
+    #--Config Phase -----------------------------------------------------------
+    autoRe = re.compile(ur"^UNDEFINED$",re.I|re.U) # overridden by
+    # NamesPatcher, NpcFacePatcher, and not used by ImportInventory,
+    # ImportRelations, ImportFactions
+    def saveConfig(self, configs):
+        """Save config to configs dictionary."""
+        config = super(_ImporterPatcherPanel, self).saveConfig(configs)
+        if self.isEnabled:
+            importedMods = [item for item,value in
+                            self.configChecks.iteritems() if
+                            value and bosh.reModExt.search(item.s)]
+            configs['ImportedMods'].update(importedMods)
+        return config
+
+#------------------------------------------------------------------------------
 # GUI Patcher classes - mixins of patchers and the GUI patchers defined above -
 # Do _not_ rename the gui patcher classes or you will break existing BP configs
 #------------------------------------------------------------------------------
