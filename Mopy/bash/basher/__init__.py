@@ -970,6 +970,7 @@ class ModList(_ModsUIList):
             # select manually as OnSelectItem() will fire for the wrong
             # index if list is sorted with selected first
             self.SelectItem(mod_clicked_on_icon, deselectOthers=True)
+            event.Veto()
         else:
             mod_clicked = self._getItemClicked(event)
             if event.AltDown() and mod_clicked:
