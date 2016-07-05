@@ -427,11 +427,8 @@ class CBash_CellImporter(_ACellImporter,CBash_ImportPatcher):
         for bashKey in bashTags & self.autoKey:
             attr_value = record.ConflictDetails(self.tag_attrs[bashKey])
             if not ValidateDict(attr_value, self.patchFile):
-                mod_skipcount = \
-                    self.patchFile.patcher_mod_skipcount.setdefault(
-                    self.name, {})
-                mod_skipcount[modFile.GName] = mod_skipcount.setdefault(
-                    modFile.GName, 0) + 1
+                self.patchFile.patcher_mod_skipcount[self.name][
+                    modFile.GName] += 1
                 continue
             self.fid_attr_value.setdefault(record.fid,{}).update(attr_value)
 
@@ -536,12 +533,8 @@ class GraphicsPatcher(ImportPatcher):
                                 0] not in self.patchFile.loadSet):
                                 # Ignore the record. Another option would be
                                 # to just ignore the attr_fidvalue result
-                                mod_skipcount = self.patchFile\
-                                    .patcher_mod_skipcount.setdefault(
-                                    self.name, {})
-                                mod_skipcount[
-                                    srcMod] = mod_skipcount.setdefault(srcMod,
-                                                                       0) + 1
+                                self.patchFile.patcher_mod_skipcount[
+                                    self.name][srcMod] += 1
                                 break
                         else:
                             temp_id_data[fid] = dict(
@@ -695,10 +688,8 @@ class CBash_GraphicsPatcher(_RecTypeModLogging):
         """Records information needed to apply the patch."""
         attr_value = record.ConflictDetails(self.class_attrs[record._Type])
         if not ValidateDict(attr_value, self.patchFile):
-            mod_skipcount = self.patchFile.patcher_mod_skipcount.setdefault(
-                self.name, {})
-            mod_skipcount[modFile.GName] = mod_skipcount.setdefault(
-                modFile.GName, 0) + 1
+            self.patchFile.patcher_mod_skipcount[self.name][
+                modFile.GName] += 1
             return
         self.fid_attr_value.setdefault(record.fid,{}).update(attr_value)
 
@@ -961,8 +952,8 @@ class CBash_ActorImporter(_RecTypeModLogging):
             if attrs:
                 attr_value = record.ConflictDetails(attrs)
                 if not ValidateDict(attr_value, self.patchFile):
-                    mod_skipcount = self.patchFile.patcher_mod_skipcount.setdefault(self.name,{})
-                    mod_skipcount[modFile.GName] = mod_skipcount.setdefault(modFile.GName, 0) + 1
+                    self.patchFile.patcher_mod_skipcount[self.name][
+                        modFile.GName] += 1
                     continue
                 self.fid_attr_value.setdefault(record.fid,{}).update(attr_value)
 
@@ -1249,10 +1240,7 @@ class CBash_NPCAIPackagePatcher(CBash_ImportPatcher):
         """Records information needed to apply the patch."""
         aiPackages = record.aiPackages
         if not ValidateList(aiPackages, self.patchFile):
-            mod_skipcount = self.patchFile.patcher_mod_skipcount.setdefault(
-                self.name, {})
-            mod_skipcount[modFile.GName] = mod_skipcount.setdefault(
-                modFile.GName, 0) + 1
+            self.patchFile.patcher_mod_skipcount[self.name][modFile.GName] += 1
             return
 
         recordId = record.fid
@@ -1373,11 +1361,8 @@ class CBash_DeathItemPatcher(CBash_ImportPatcher):
             else:
                 # Ignore the record. Another option would be to just ignore
                 # the invalid formIDs
-                mod_skipcount = \
-                    self.patchFile.patcher_mod_skipcount.setdefault(
-                    self.name, {})
-                mod_skipcount[modFile.GName] = mod_skipcount.setdefault(
-                    modFile.GName, 0) + 1
+                self.patchFile.patcher_mod_skipcount[self.name][
+                    modFile.GName] += 1
 
     def apply(self,modFile,record,bashTags):
         """Edits patch file as desired."""
@@ -1806,11 +1791,8 @@ class CBash_ImportScripts(_RecTypeModLogging):
             else:
                 # Ignore the record. Another option would be to just ignore
                 # the invalid formIDs
-                mod_skipcount = \
-                    self.patchFile.patcher_mod_skipcount.setdefault(
-                    self.name, {})
-                mod_skipcount[modFile.GName] = mod_skipcount.setdefault(
-                    modFile.GName, 0) + 1
+                self.patchFile.patcher_mod_skipcount[self.name][
+                    modFile.GName] += 1
 
     def apply(self,modFile,record,bashTags):
         """Edits patch file as desired."""
@@ -2460,9 +2442,7 @@ class _ANpcFacePatcher(AImportPatcher):
     def _ignore_record(self, faceMod):
         # Ignore the record. Another option would be to just ignore the
         # attr_fidvalue result
-        mod_skipcount = self.patchFile.patcher_mod_skipcount.setdefault(
-            self.name, {})
-        mod_skipcount[faceMod] = mod_skipcount.setdefault(faceMod, 0) + 1
+        self.patchFile.patcher_mod_skipcount[self.name][faceMod] += 1
 
 class NpcFacePatcher(_ANpcFacePatcher,ImportPatcher):
     autoKey = (u'NpcFaces', u'NpcFacesForceFullImport', u'Npc.HairOnly',
@@ -2794,8 +2774,8 @@ class CBash_RoadImporter(CBash_ImportPatcher):
                 copyRoad = curRoad #Copy the current road over (its formID is acceptable)
             else:
                 #Ignore the record.
-                mod_skipcount = self.patchFile.patcher_mod_skipcount.setdefault(self.name,{})
-                mod_skipcount[modFile.GName] = mod_skipcount.setdefault(modFile.GName, 0) + 1
+                self.patchFile.patcher_mod_skipcount[self.name][
+                    modFile.GName] += 1
                 return
 
             override = copyRoad.CopyAsOverride(self.patchFile, UseWinningParents=True) #Copies the road over (along with the winning version of its parents if needed)
@@ -2879,11 +2859,8 @@ class CBash_SoundPatcher(_RecTypeModLogging):
             else:
                 # Ignore the record. Another option would be to just ignore
                 # the invalid formIDs
-                mod_skipcount = \
-                    self.patchFile.patcher_mod_skipcount.setdefault(
-                    self.name, {})
-                mod_skipcount[modFile.GName] = mod_skipcount.setdefault(
-                    modFile.GName, 0) + 1
+                self.patchFile.patcher_mod_skipcount[self.name][
+                    modFile.GName] += 1
 
     def apply(self,modFile,record,bashTags):
         """Edits patch file as desired."""
@@ -3040,8 +3017,8 @@ class CBash_StatsPatcher(_RecTypeModLogging):
                 self.fid_attr_value.setdefault(record.fid,{}).update(conflicts)
             else:
                 #Ignore the record. Another option would be to just ignore the invalid formIDs
-                mod_skipcount = self.patchFile.patcher_mod_skipcount.setdefault(self.name,{})
-                mod_skipcount[modFile.GName] = mod_skipcount.setdefault(modFile.GName, 0) + 1
+                self.patchFile.patcher_mod_skipcount[self.name][
+                    modFile.GName] += 1
 
     def apply(self,modFile,record,bashTags):
         """Edits patch file as desired."""
@@ -3185,8 +3162,8 @@ class CBash_SpellsPatcher(CBash_ImportPatcher):
                 self.id_stats.setdefault(record.fid,{}).update(conflicts)
             else:
                 #Ignore the record. Another option would be to just ignore the invalid formIDs
-                mod_skipcount = self.patchFile.patcher_mod_skipcount.setdefault(self.name,{})
-                mod_skipcount[modFile.GName] = mod_skipcount.setdefault(modFile.GName, 0) + 1
+                self.patchFile.patcher_mod_skipcount[self.name][
+                    modFile.GName] += 1
 
     def apply(self,modFile,record,bashTags):
         """Edits patch file as desired."""
