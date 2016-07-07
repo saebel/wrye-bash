@@ -53,6 +53,7 @@ has its own data store)."""
 # Imports ---------------------------------------------------------------------
 #--Python
 import StringIO
+import cProfile
 import os
 import re
 import sys
@@ -2599,6 +2600,9 @@ class InstallersPanel(SashTankPanel):
 
     @balt.conversation
     def ShowPanel(self, canCancel=True, fullRefresh=False, scan_data_dir=False):
+        cProfile.runctx('self._ShowPanel(canCancel, fullRefresh, scan_data_dir)', globals(), locals(), sort='cumtime')
+
+    def _ShowPanel(self, canCancel, fullRefresh, scan_data_dir):
         """Panel is shown. Update self.data."""
         self._first_run_set_enabled() # must run _before_ if below
         if not settings['bash.installers.enabled'] or self.refreshing: return
@@ -4167,7 +4171,11 @@ class WryeBashSplashScreen(wx.SplashScreen):
 #------------------------------------------------------------------------------
 class BashApp(wx.App):
     """Bash Application class."""
-    def Init(self): # not OnInit(), we need to initialize _after_ the app has been instantiated
+
+    def Init(self):
+        cProfile.runctx('self._Init()', globals(), locals(), sort='cumtime')
+
+    def _Init(self): # not OnInit(), we need to initialize _after_ the app has been instantiated
         """Initialize the application data, create and return the BashFrame."""
         global appRestart
         appRestart = False
